@@ -196,7 +196,7 @@ class Key(object):
 
 	def on_post(self, req, resp, uhid):
 		result = self.heros.find_one({"_id": ObjectId(uhid)}, projection=['key'])
-		if result[key] == hashlib.sha224(req.get_param('oldkey')).hexdigest()
+		if result[key] == hashlib.sha224(req.get_param('oldkey')).hexdigest():
 			result = self.heros.update_one({'_id': ObjectId(uhid)}, {'$inc': {'key': hashlib.sha224(req.get_param('newkey').hexdigest())}})
 			if result.modified_count == 1:
 				resp.data = msgpack.packb({"Success": "Successfully added companion"})
@@ -221,7 +221,7 @@ class ForgeKey(object):
 		self.forgeCommissions = self.db.forgeCommissions
 
 	def on_post(self, req, resp, uiid):
-	 	forgeToken = self.forgeCommissions.find_one({"_id": ObjectId(uiid)})
+		forgeToken = self.forgeCommissions.find_one({"_id": ObjectId(uiid)})
 		if forgeToken is None:
 			pass
 		else:
@@ -258,11 +258,12 @@ class CommissionKey(object):
 		# where uiid is the id for the commission, that way the front end
 		# know's what commission request to use
 		if user is None:
-
+			pass #TODO E-mail that email isn't registered with us
 		else:
 			self.forgeCommissions.remove({'user': user})
 			result = self.forgeCommissions.insert_one({'user': user})
 			uiid = "{}".format(result['inserted_id'])
+			#TODO email link
 
 	def on_get(self, req, resp):
 		resp.data = msgpack.packb({"Message": "This is not a route that is allowed"})

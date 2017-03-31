@@ -19,7 +19,7 @@ class CheckCabbage(object):
         resp.data = msgpack.packb({"Msg": "We've got cabbages my liege!"})
 
 ### HERO RELATED ROUTES
-api.add_route('/checkCabbage', checkCabbage())
+api.add_route('/checkCabbage', CheckCabbage())
 api.add_route('/hero/{uhid}', hero.Hero("TODO"))
 api.add_route('/hero/create', hero.NewHero("TODO"))
 api.add_route('/hero/{uhid}/playername', hero.PlayerName("TODO"))
@@ -27,4 +27,5 @@ api.add_route('/hero/{uhid}/heroname', hero.HeroName("TODO"))
 api.add_route('/hero/{uhid}/email', hero.HeroEmail("TODO"))
 api.add_route('/hero/{uhid}/companions', hero.Companions("TODO"))
 api.add_route('/hero/{uhid}/key', hero.Key("TODO"))
-api.add_route('/hero/{uiid}/forgekey', hero.ForgeKey("TODO"))
+api.add_route('/hero/forgekey/{uiid}', hero.ForgeKey("TODO"))
+api.add_route('/hero/commissionkey', hero.CommissionKey("TODO"))
