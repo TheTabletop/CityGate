@@ -195,19 +195,76 @@ class Key(object):
 		self.heros = self.db.heros
 
 	def on_post(self, req, resp, uhid):
-		pass #TODO
+		result = self.heros.find_one({"_id": ObjectId(uhid)}, projection=['key'])
+		if result[key] == hashlib.sha224(req.get_param('oldkey')).hexdigest():
+			result = self.heros.update_one({'_id': ObjectId(uhid)}, {'$inc': {'key': hashlib.sha224(req.get_param('newkey').hexdigest())}})
+			if result.modified_count == 1:
+				resp.data = msgpack.packb({"Success": "Successfully added companion"})
+				resp.status = falcon.HTTP_202
+			else:
+				resp.data = msgpack.packb({"Failed": "Unable to update key"})
+				resp.status = falcon.HTTP_500
+		else:
+			resp.data = msgpack.packb({"Failed": "Incorrect account key for authorization"})
+			resp.status = falcon.HTTP_400
+
 
 	def on_get(self, req, resp, uhid):
-		pass #TODO
+		resp.data = msgpack.pack({"Message": "Yea right, like we'd allow that."})
+		resp.status = falcon.HTTP_740
 
 class ForgeKey(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
 		self.db = MongoClient().greatLibrary
 		self.heros = self.db.heros
+		self.forgeCommissions = self.db.forgeCommissions
 
-	def on_post(self, req, resp, uhid):
-		pass #TODO
+	def on_post(self, req, resp, uiid):
+		forgeToken = self.forgeCommissions.find_one({"_id": ObjectId(uiid)})
+		if forgeToken is None:
+			pass
+		else:
+			uhid = forgeToken.get('uhid')
+			result = self.heros.update_one({'_id': ObjectId(uhid)}, {'$inc': {'key': hashlib.sha224(req.get_param('newkey').hexdigest())}})
+			if result.modified_count == 1:
+				resp.data = msgpack.packb({"Success": "Successfully updated key"})
+				resp.status = falcon.HTTP_202
+				self.forgeCommissions.delete_one({"_id": ObjectId(uiid)})
+			else:
+				resp.data = msgpack.packb({"Failed": "Unable to update key"})
+				resp.status = falcon.HTTP_500
 
-	def on_get(self, req, resp, uhid):
-		pass #TODO
+	def on_get(self, req, resp, uiid):
+		resp.data = msgpack.pack({"Message": "Yea right, like we'd allow that."})
+		resp.status = falcon.HTTP_740
+
+class CommissionKey(object):
+	def __init__(self, db_reference):
+		self.db = db_reference
+		self.db = MongoClient().greatLibrary
+		self.heros = self.db.heros
+		self.forgeCommissions = self.db.forgeCommissions
+
+	def on_post(self, req, resp):
+		email = req.params_get('email')
+		user = self.heros.find_one({'email': email}, projection=['_id'])
+
+		#TODO
+		# Implement sending an e-mail to specified e-mail address
+		# If e-mail does not exist, send an e-mail that states it's not registered
+		# If e-mail exists, send e-mail with a link in the form:
+		# http://www.rollforguild.com/forgekey/<uiid>
+		# where uiid is the id for the commission, that way the front end
+		# know's what commission request to use
+		if user is None:
+			pass #TODO E-mail that email isn't registered with us
+		else:
+			self.forgeCommissions.remove({'user': user})
+			result = self.forgeCommissions.insert_one({'user': user})
+			uiid = "{}".format(result['inserted_id'])
+			#TODO email link
+
+	def on_get(self, req, resp):
+		resp.data = msgpack.packb({"Message": "This is not a route that is allowed"})
+		resp.status = falcon.HTTP_405
