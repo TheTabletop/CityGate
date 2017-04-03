@@ -61,13 +61,13 @@ class Hero(object):
 	# Get a hero by unique hero id (uhid)
 	# Must have an active user session token
 	def on_get(self, req, resp, uhid):
-		result = self.heros.find({"_id": ObjectId(uhid)})
+		result = self.heros.find_one({"_id": ObjectId(uhid)})
 
 		if result.count() == 0:
 			resp.data = msgpack.packb({"Error": "We could not find that hero, they must have nat 20'd  their stealth check"})
 			resp.status = falcon.HTTP_404
 		elif result.count() == 1:
-			hero = result[0]
+			hero = result
 			for k, v in hero.items():
 				if type(hero[k]) is ObjectId:
 					temp = "{}".format(v)

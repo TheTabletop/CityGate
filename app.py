@@ -1,6 +1,7 @@
 import falcon
 import msgpack
 import resources.hero as hero
+import resources.guild as guild
 
 api = application = falcon.API()
 
@@ -17,9 +18,10 @@ class CheckCabbage(object):
     def on_get(self, req, resp):
         resp.status = falcon.HTTP_200
         resp.data = msgpack.packb({"Msg": "We've got cabbages my liege!"})
+### HEALTH CHECK
+api.add_route('/checkCabbage', CheckCabbage())
 
 ### HERO RELATED ROUTES
-api.add_route('/checkCabbage', CheckCabbage())
 api.add_route('/hero/{uhid}', hero.Hero("TODO"))
 api.add_route('/hero/create', hero.NewHero("TODO"))
 api.add_route('/hero/{uhid}/playername', hero.PlayerName("TODO"))
@@ -29,3 +31,11 @@ api.add_route('/hero/{uhid}/companions', hero.Companions("TODO"))
 api.add_route('/hero/{uhid}/key', hero.Key("TODO"))
 api.add_route('/hero/forgekey/{uiid}', hero.ForgeKey("TODO"))
 api.add_route('/hero/commissionkey', hero.CommissionKey("TODO"))
+
+### GUILD RELATED ROUTES
+api.add_route('/guild/{ugid}', guild.Guild("TODO"))
+api.add_route('/guild/form', guild.FormGuild("TODO"))
+api.add_route('/guild/{ugid}/guildname', guild.GuildName("TODO"))
+api.add_route('/guild/{ugid}/systems', guild.Systems("TODO"))
+api.add_route('/guild/{ugid}/charter', guild.Charter("TODO"))
+api.add_route('/guild/{ugid}/members/{uhid}', guild.Members("TODO"))
