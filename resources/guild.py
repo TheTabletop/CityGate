@@ -35,9 +35,12 @@ class FormGuild(object):
 				"nstime": "",
 				"nsgame": "",
 				"location": "",
-				"last session": "",
+				"previous_sessions": [],
 				"games": [],
-				"members": []
+				"members": [],
+				"next_session": {},
+				"hero_requests": [],
+				"invited_heros": []
 			})
 
 		resp.data = msgpack.packb({"Info": "Successfully created a new hero with id: {}".format(result)})
@@ -183,3 +186,136 @@ class Memebers(object):
 		self.db = db_reference
 		self.db = MongoClient().greatLibrary
 		self.guilds = self.db.guilds
+
+	def on_get(self, req, resp, ugid):
+		result = self.guilds.find_one({'_id': ObjectId(ugid)}, projection=['members'])
+
+		if result is None:
+			resp.data = msgpack.packb({"Failure": "Guild not found"})
+			resp.status = falcon.HTTP_404
+		else:
+			#TODO serialize ObjectId data
+			resp.data = msgpack.packb({"game": result.get('nsgame'), "time": result.get('nstime'), "location": result.get('location')})
+			resp.status = falcon.HTTP_200
+
+	#TODO make sure user deleting another user has access
+	def on_delete(self, req, resp, ugid):
+		pass
+
+class RequestToJoinGuild(object):
+	def __init__(object, db_reference):
+		self.db = db_reference
+		self.db = MongoClient().greatLibrary
+		self.guilds = self.db.guilds
+		self.heros = self.db.heros
+
+	def on_post(self, resp, req, ugid, uhid):
+		pass
+
+	def on_delete(self, resp, req, ugid, uhid):
+		pass
+
+class RespondToHeroRequest(object):
+	def __init__(object, db_reference):
+		self.db = db_reference
+		self.db = MongoClient().greatLibrary
+		self.guilds = self.db.guilds
+		self.heros = self.db.heros
+
+	def on_post(self, resp, req, ugid, uhid):
+
+class InviteHeroToJoin(object):
+	def __init__(object, db_reference):
+		self.db = db_reference
+		self.db = MongoClient().greatLibrary
+		self.guilds = self.db.guilds
+		self.heros = self.db.heros
+
+	def on_post(self, resp, req, ugid, uhid):
+		pass
+
+	def on_delete(self, resp, req, ugid, uhid):
+		pass
+
+class RespondToGuildInvite(object):
+	def __init__(object, db_reference):
+		self.db = db_reference
+		self.db = MongoClient().greatLibrary
+		self.guilds = self.db.guilds
+		self.heros = self.db.heros
+
+	def on_post(self, resp, req, ugid, uhid):
+		dec = req.params_get('decision')
+		if not (decision == 'Accept' or decision == 'Decline'):
+			resp.data = msgpack.packb({"Error": "Must provide decision param as either 'Accept' or 'Decline'"})
+			resp.status = falcon.HTTP_400
+		else:
+			if decision == "Decline":
+				self.guilds.update_one({'_id': ObjectId(ugid)}, {'$pull': {'invited_heros': ObjectId(uhid)}})
+				self.heros.update_one({'_id': ObjectId(uhid)}, {'$pull': {'guild_invites': ObjectId(ugid)}})
+				resp.data = msgpack.packb({"Success": "Acknowledged decline of invite"})
+			elif decision == 'Accept'
+				self.guilds.update_one({'_id': ObjectId(ugid)}, {'$pull': {'invited_heros': ObjectId(uhid)}}, {'$push': {'membsers': ObjectId(uhid)}})
+				self.heros.update_one({'_id': ObjectId(uhid)}, {'$pull': {'guild_invites': ObjectId(ugid)}}, {'$push': {'guilds': ObjectId(ugid)}})
+				resp.data = msgpack.packb({"Success": "Acknowledged acceptance of inivte"})
+			resp.status = falcon.HTTP_202
+
+class LeaveGuild(object):
+	def __init__(object, db_reference):
+		self.db = db_reference
+		self.db = MongoClient().greatLibrary
+		self.guilds = self.db.guilds
+		self.heros = self.db.heros
+
+	def on_post(self, resp, req, ugid, uhid):
+		gRemove = self.guilds.update_one({'_id': ObjectId(ugid)}, {'$pull': {'members': {'uhid': ObjectId(uhid)}}})
+		hRemove = self.heros.update_one({'_id': ObjectId(uhid)}, {'$pull': {'guild': {'ugid': ObjectId(ugid)}}})
+		message = {}
+		gSuccess = 0
+		hSuccess = 0
+
+		if gRemove.match_count == 0:
+			message['Error_gRemove'] = "Hero is not member of guild."
+			gSuccess = 1
+		elif gRemove.modified_count == 0:
+			message['Error_gRemove'] = "Could not remove hero from guild"
+			gSuccess = 3
+		elif gRemove.modified_count == 1:
+			message['Success_gRemove'] = "Hero removed from guild"
+			gSuccess = 5
+		else:
+			message['Error_gRemove'] == "Unexpected issue occured..."
+
+		if hRemove.match_count == 0:
+			message['Error_gRemove'] = "Hero is not member of guild."
+			hSuccess = 1
+		elif hRemove.modified_count == 0:
+			message['Error_gRemove'] = "Could not remove hero's associated guild"
+			hSuccess = 3
+		elif hRemove.modified_count == 1:
+			message['Success_hRemove'] = "Hero removed from guild"
+			hSuccess = 5
+		else:
+			message['Error_gRemove'] == "Unexpected issue occured..."
+
+		resp.date = msgpack.packb(message)
+
+		#TODO We might want to run extra stuff in cases where sum is between 1-8
+		if hSuccess + gSuccess == 10:
+			resp.status = falcon.HTTP_202
+		elif hSuccess + gSuccess == 8:
+			resp.status = falcon.HTTP_500
+		elif hSuccess + gSuccess == 6:
+			resp.status = falcon.HTTP_726
+		elif hSuccess + gSuccess == 5:
+			resp.status = falcon.HTTP_726
+		elif hSuccess + gSuccess == 4:
+			resp.status = falcon.HTTP_726
+		elif hSuccess + gSuccess == 3:
+			resp.status = falcon.HTTP_726
+		elif hSuccess + gSuccess == 2:
+			resp.status = falcon.HTTP_726
+		elif hSuccess + gSuccess == 1:
+			resp.status = falcon.HTTP_726
+		else:
+			resp.status = falcon.HTTP_400
