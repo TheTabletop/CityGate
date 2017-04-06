@@ -155,23 +155,32 @@ class Session(object):
 			resp.data = msgpack.packb({"Failed": "Unable to update guild's next session"})
 			resp.status = falcon.HTTP_500
 
-class Nstime(object):
-	def __init__(object, db_reference):
-		self.db = db_reference
-		self.db = MongoClient().greatLibrary
-		self.guilds = self.db.guilds
-
-class Nsgame(object):
-	def __init__(object, db_reference):
-		self.db = db_reference
-		self.db = MongoClient().greatLibrary
-		self.guilds = self.db.guilds
+#TODO: SESSSION STUFFS
 
 class Location(object):
 	def __init__(object, db_reference):
 		self.db = db_reference
 		self.db = MongoClient().greatLibrary
 		self.guilds = self.db.guilds
+
+	def on_get(self, req, resp, ugid):
+		result = self.guilds.find_one({'_id': ObjectId(ugid)}, projection=['location'])
+
+		resp.data = msgpack.packb(result.get('location'))
+		resp.status = falcon.HTTP_200
+
+	def on_post(self, req, resp, ugid):
+		result = self.guilds.update_one({'_id': ObjectId(ugid)}, {'$inc': {'location': req.params_get('location')}})
+
+		if result.match_count = 0:
+			resp.data = msgpack.packb({"Error": "Guild not found"})
+			resp.status = falcon.HTTP_404
+		elif result.modified_count = 0:
+			resp.data = msgpack.packb({"Error": "Unable to update guild location"})
+			resp.status = falcon.HTTP_500
+		else:
+			resp.data = msgpack.packb("Successfully updated guild location")
+			resp.status = falcon.HTTP_202
 
 class Games(object):
 	def __init__(object, db_reference):
