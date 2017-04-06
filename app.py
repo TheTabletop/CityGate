@@ -2,6 +2,7 @@ import falcon
 import msgpack
 import resources.hero as hero
 import resources.guild as guild
+import resources.search as search
 
 api = application = falcon.API()
 
@@ -40,3 +41,7 @@ api.add_route('/guild/{ugid}/games', guild.Games("TODO"))
 api.add_route('/guild/{ugid}/charter', guild.Charter("TODO"))
 api.add_route('/guild/{ugid}/members/{uhid}', guild.Members("TODO"))
 api.add_route('/guild/{ugid}/location', guild.Location("TODO"))
+
+### SEARCH RELATED ROUTES
+api.add_route('/search/guilds', search.AllGuilds("TODO"))
+api.add_route('/search/heros', search.AllHeros("TODO"))
