@@ -75,7 +75,7 @@ class Guild(object):
 	def on_post(self, req, resp, ugid):
 		pass
 
-class GuildName(object)
+class GuildName(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
 		self.db = MongoClient().greatLibrary
@@ -130,7 +130,7 @@ class Charter(object):
 			resp.status = falcon.HTTP_500
 
 class Session(object):
-	def __init__(object, db_reference):
+	def __init__(self, db_reference):
 		self.db = db_reference
 		self.db = MongoClient().greatLibrary
 		self.guilds = self.db.guilds
@@ -158,7 +158,7 @@ class Session(object):
 #TODO: SESSSION STUFFS
 
 class Location(object):
-	def __init__(object, db_reference):
+	def __init__(self, db_reference):
 		self.db = db_reference
 		self.db = MongoClient().greatLibrary
 		self.guilds = self.db.guilds
@@ -172,10 +172,10 @@ class Location(object):
 	def on_post(self, req, resp, ugid):
 		result = self.guilds.update_one({'_id': ObjectId(ugid)}, {'$inc': {'location': req.params_get('location')}})
 
-		if result.match_count = 0:
+		if result.match_count == 0:
 			resp.data = msgpack.packb({"Error": "Guild not found"})
 			resp.status = falcon.HTTP_404
-		elif result.modified_count = 0:
+		elif result.modified_count == 0:
 			resp.data = msgpack.packb({"Error": "Unable to update guild location"})
 			resp.status = falcon.HTTP_500
 		else:
@@ -183,7 +183,7 @@ class Location(object):
 			resp.status = falcon.HTTP_202
 
 class Games(object):
-	def __init__(object, db_reference):
+	def __init__(self, db_reference):
 		self.db = db_reference
 		self.db = MongoClient().greatLibrary
 		self.guilds = self.db.guilds
@@ -206,8 +206,8 @@ class Games(object):
 		resp.data = msgpack.pack({'Success': "Deleted %s from guild games list".fomrat(req.get_param('games'))})
 		resp.status = falcon.HTTP_202
 
-class Memebers(object):
-	def __init__(object, db_reference):
+class Members(object):
+	def __init__(self, db_reference):
 		self.db = db_reference
 		self.db = MongoClient().greatLibrary
 		self.guilds = self.db.guilds
@@ -228,14 +228,14 @@ class Memebers(object):
 		pass
 
 class RequestToJoinGuild(object):
-	def __init__(object, db_reference):
+	def __init__(self, db_reference):
 		self.db = db_reference
 		self.db = MongoClient().greatLibrary
 		self.guilds = self.db.guilds
 		self.heros = self.db.heros
 
 	def on_post(self, resp, req, ugid, uhid):
-		self.heros.update_one({'_id': ObjectId(uhid)}, {'$push': {'requested_guilds': ObjectId(ugid)})
+		self.heros.update_one({'_id': ObjectId(uhid)}, {'$push': {'requested_guilds': ObjectId(ugid)}})
 		self.guilds.update_one({'_id': ObjectId(ugid)}, {'$push': {'hero_requests': ObjectId(uhid)}})
 
 		resp.data = msgpack.packb({'Success': 'Invited user'})
@@ -249,7 +249,7 @@ class RequestToJoinGuild(object):
 		resp.status = falcon.HTTP_202
 
 class RespondToHeroRequest(object):
-	def __init__(object, db_reference):
+	def __init__(self, db_reference):
 		self.db = db_reference
 		self.db = MongoClient().greatLibrary
 		self.guilds = self.db.guilds
@@ -265,21 +265,21 @@ class RespondToHeroRequest(object):
 				self.guilds.update_one({'_id': ObjectId(ugid)}, {'$pull': {'invited_heros': ObjectId(uhid)}})
 				self.heros.update_one({'_id': ObjectId(uhid)}, {'$pull': {'guild_invites': ObjectId(ugid)}})
 				resp.data = msgpack.packb({"Success": "Acknowledged decline of invite"})
-			elif decision == 'Accept'
+			elif decision == 'Accept':
 				self.guilds.update_one({'_id': ObjectId(ugid)}, {'$pull': {'invited_heros': ObjectId(uhid)}, '$push': {'membsers': ObjectId(uhid)}})
 				self.heros.update_one({'_id': ObjectId(uhid)}, {'$pull': {'guild_invites': ObjectId(ugid)}, '$push': {'guilds': ObjectId(ugid)}})
 				resp.data = msgpack.packb({"Success": "Acknowledged acceptance of inivte"})
 			resp.status = falcon.HTTP_202
 
 class InviteHeroToJoin(object):
-	def __init__(object, db_reference):
+	def __init__(self, db_reference):
 		self.db = db_reference
 		self.db = MongoClient().greatLibrary
 		self.guilds = self.db.guilds
 		self.heros = self.db.heros
 
 	def on_post(self, resp, req, ugid, uhid):
-		self.heros.update_one({'_id': ObjectId(uhid)}, {'$push': {'guild_invites': ObjectId(ugid)})
+		self.heros.update_one({'_id': ObjectId(uhid)}, {'$push': {'guild_invites': ObjectId(ugid)}})
 		self.guilds.update_one({'_id': ObjectId(ugid)}, {'$push': {'invited_heros': ObjectId(uhid)}})
 
 		resp.data = msgpack.packb({'Success': 'Invited user'})
@@ -293,7 +293,7 @@ class InviteHeroToJoin(object):
 		resp.status = falcon.HTTP_202
 
 class RespondToGuildInvite(object):
-	def __init__(object, db_reference):
+	def __init__(self, db_reference):
 		self.db = db_reference
 		self.db = MongoClient().greatLibrary
 		self.guilds = self.db.guilds
@@ -309,14 +309,14 @@ class RespondToGuildInvite(object):
 				self.guilds.update_one({'_id': ObjectId(ugid)}, {'$pull': {'invited_heros': ObjectId(uhid)}})
 				self.heros.update_one({'_id': ObjectId(uhid)}, {'$pull': {'guild_invites': ObjectId(ugid)}})
 				resp.data = msgpack.packb({"Success": "Acknowledged decline of invite"})
-			elif decision == 'Accept'
+			elif decision == 'Accept':
 				self.guilds.update_one({'_id': ObjectId(ugid)}, {'$pull': {'invited_heros': ObjectId(uhid)}, '$push': {'membsers': ObjectId(uhid)}})
 				self.heros.update_one({'_id': ObjectId(uhid)}, {'$pull': {'guild_invites': ObjectId(ugid)}, '$push': {'guilds': ObjectId(ugid)}})
 				resp.data = msgpack.packb({"Success": "Acknowledged acceptance of inivte"})
 			resp.status = falcon.HTTP_202
 
 class LeaveGuild(object):
-	def __init__(object, db_reference):
+	def __init__(self, db_reference):
 		self.db = db_reference
 		self.db = MongoClient().greatLibrary
 		self.guilds = self.db.guilds
