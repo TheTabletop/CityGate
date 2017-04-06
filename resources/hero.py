@@ -37,7 +37,8 @@ class NewHero(object):
 				"key": req.get_param('key'),
 				"companions": [],
 				"guild_invites": [],
-				"requested_guilds": []
+				"requested_guilds": [],
+				"pigeon_coop_id": None
 			})
 
 		resp.data = msgpack.packb({"Info": "Successfully created a new hero with id: {}".format(result)})
