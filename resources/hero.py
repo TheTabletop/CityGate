@@ -35,8 +35,9 @@ class NewHero(object):
 				"heroname" : req.get_param('heroname'),
 				"games": req.get_param('games'),
 				"key": req.get_param('key'),
-				"companions": []
-
+				"companions": [],
+				"guild_invites": [],
+				"requested_guilds": []
 			})
 
 		resp.data = msgpack.packb({"Info": "Successfully created a new hero with id: {}".format(result)})
@@ -61,13 +62,13 @@ class Hero(object):
 	# Get a hero by unique hero id (uhid)
 	# Must have an active user session token
 	def on_get(self, req, resp, uhid):
-		result = self.heros.find({"_id": ObjectId(uhid)})
+		result = self.heros.find_one({"_id": ObjectId(uhid)})
 
 		if result.count() == 0:
 			resp.data = msgpack.packb({"Error": "We could not find that hero, they must have nat 20'd  their stealth check"})
 			resp.status = falcon.HTTP_404
 		elif result.count() == 1:
-			hero = result[0]
+			hero = result
 			for k, v in hero.items():
 				if type(hero[k]) is ObjectId:
 					temp = "{}".format(v)
