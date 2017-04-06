@@ -2,6 +2,7 @@ import falcon
 import msgpack
 import resources.hero as hero
 import resources.guild as guild
+import resources.search as search
 
 api = application = falcon.API()
 
