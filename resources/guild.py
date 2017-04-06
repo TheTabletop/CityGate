@@ -32,13 +32,11 @@ class FormGuild(object):
 			{
 				"guildname": req.get_param('guildname'),
 				"charter": req.get_param('charter'),
-				"nstime": "",
-				"nsgame": "",
 				"location": "",
-				"previous_sessions": [],
 				"games": [],
 				"members": [],
-				"next_session": {},
+				"future_sessions": [],
+				"previous_sessions": [],
 				"hero_requests": [],
 				"invited_heros": []
 			})
@@ -181,6 +179,24 @@ class Games(object):
 		self.db = MongoClient().greatLibrary
 		self.guilds = self.db.guilds
 
+	def on_get(self, req, resp, ugid):
+		result = self.guilds.find_one({'_id': ObjectId(ugid)}, projection=['games'])
+
+		resp.data = msgpack.pack(result.get('games'))
+		resp.status = falcon.HTTP_200
+
+	def on_post(self, req, resp, ugid):
+		result = self.guilds.update_one({'_id': ObjectId(ugid)}, {'$push': {'games': req.get_param('games')}})
+
+		resp.data = msgpack.pack({'Success': "Added %s to guild games list".fomrat(req.get_param('games'))})
+		resp.status = falcon.HTTP_202
+
+	def on_delete(self, req, resp, ugid):
+		result = self.guilds.update_one({'_id': ObjectId(ugid)}, {'$push': {'games': req.get_param('games')}})
+
+		resp.data = msgpack.pack({'Success': "Deleted %s from guild games list".fomrat(req.get_param('games'))})
+		resp.status = falcon.HTTP_202
+
 class Memebers(object):
 	def __init__(object, db_reference):
 		self.db = db_reference
@@ -210,10 +226,18 @@ class RequestToJoinGuild(object):
 		self.heros = self.db.heros
 
 	def on_post(self, resp, req, ugid, uhid):
-		pass
+		self.heros.update_one({'_id': ObjectId(uhid)}, {'$push': {'requested_guilds': ObjectId(ugid)})
+		self.guilds.update_one({'_id': ObjectId(ugid)}, {'$push': {'hero_requests': ObjectId(uhid)}})
+
+		resp.data = msgpack.packb({'Success': 'Invited user'})
+		resp.status = falcon.HTTP_202
 
 	def on_delete(self, resp, req, ugid, uhid):
-		pass
+		self.heros.update_one({'_id': ObjectId(uhid)}, {'$pull': {'requested_guilds': ObjectId(ugid)}})
+		self.guilds.update_one({'_id': ObjectId(ugid)}, {'$pull': {'hero_requests': ObjectId(uhid)}})
+
+		resp.data = msgpack.packb({'Success': 'Uninvited user'})
+		resp.status = falcon.HTTP_202
 
 class RespondToHeroRequest(object):
 	def __init__(object, db_reference):
@@ -223,6 +247,20 @@ class RespondToHeroRequest(object):
 		self.heros = self.db.heros
 
 	def on_post(self, resp, req, ugid, uhid):
+		dec = req.params_get('decision')
+		if not (decision == 'Accept' or decision == 'Decline'):
+			resp.data = msgpack.packb({"Error": "Must provide decision param as either 'Accept' or 'Decline'"})
+			resp.status = falcon.HTTP_400
+		else:
+			if decision == "Decline":
+				self.guilds.update_one({'_id': ObjectId(ugid)}, {'$pull': {'invited_heros': ObjectId(uhid)}})
+				self.heros.update_one({'_id': ObjectId(uhid)}, {'$pull': {'guild_invites': ObjectId(ugid)}})
+				resp.data = msgpack.packb({"Success": "Acknowledged decline of invite"})
+			elif decision == 'Accept'
+				self.guilds.update_one({'_id': ObjectId(ugid)}, {'$pull': {'invited_heros': ObjectId(uhid)}, '$push': {'membsers': ObjectId(uhid)}})
+				self.heros.update_one({'_id': ObjectId(uhid)}, {'$pull': {'guild_invites': ObjectId(ugid)}, '$push': {'guilds': ObjectId(ugid)}})
+				resp.data = msgpack.packb({"Success": "Acknowledged acceptance of inivte"})
+			resp.status = falcon.HTTP_202
 
 class InviteHeroToJoin(object):
 	def __init__(object, db_reference):
@@ -232,10 +270,18 @@ class InviteHeroToJoin(object):
 		self.heros = self.db.heros
 
 	def on_post(self, resp, req, ugid, uhid):
-		pass
+		self.heros.update_one({'_id': ObjectId(uhid)}, {'$push': {'guild_invites': ObjectId(ugid)})
+		self.guilds.update_one({'_id': ObjectId(ugid)}, {'$push': {'invited_heros': ObjectId(uhid)}})
+
+		resp.data = msgpack.packb({'Success': 'Invited user'})
+		resp.status = falcon.HTTP_202
 
 	def on_delete(self, resp, req, ugid, uhid):
-		pass
+		self.heros.update_one({'_id': ObjectId(uhid)}, {'$pull': {'guild_invites': ObjectId(ugid)}})
+		self.guilds.update_one({'_id': ObjectId(ugid)}, {'$pull': {'invited_heros': ObjectId(uhid)}})
+
+		resp.data = msgpack.packb({'Success': 'Uninvited user'})
+		resp.status = falcon.HTTP_202
 
 class RespondToGuildInvite(object):
 	def __init__(object, db_reference):
@@ -255,8 +301,8 @@ class RespondToGuildInvite(object):
 				self.heros.update_one({'_id': ObjectId(uhid)}, {'$pull': {'guild_invites': ObjectId(ugid)}})
 				resp.data = msgpack.packb({"Success": "Acknowledged decline of invite"})
 			elif decision == 'Accept'
-				self.guilds.update_one({'_id': ObjectId(ugid)}, {'$pull': {'invited_heros': ObjectId(uhid)}}, {'$push': {'membsers': ObjectId(uhid)}})
-				self.heros.update_one({'_id': ObjectId(uhid)}, {'$pull': {'guild_invites': ObjectId(ugid)}}, {'$push': {'guilds': ObjectId(ugid)}})
+				self.guilds.update_one({'_id': ObjectId(ugid)}, {'$pull': {'invited_heros': ObjectId(uhid)}, '$push': {'membsers': ObjectId(uhid)}})
+				self.heros.update_one({'_id': ObjectId(uhid)}, {'$pull': {'guild_invites': ObjectId(ugid)}, '$push': {'guilds': ObjectId(ugid)}})
 				resp.data = msgpack.packb({"Success": "Acknowledged acceptance of inivte"})
 			resp.status = falcon.HTTP_202
 
