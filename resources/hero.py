@@ -8,6 +8,7 @@ from bson import ObjectId
 import falcon
 import json
 import msgpack
+import resources.pigeoncoop as pcoop
 
 #ALLOWED_IMAGE_TYPES = (
 #    'image/gif',
@@ -28,7 +29,7 @@ class NewHero(object):
 		self.heros = self.db.heros
 
 	def on_post(self, req, resp):
-		result = self.heros.insert_one(
+		heroObject = self.heros.insert_one(
 			{
 				"email": req.get_param('email'),
 				"playername": req.get_param('playername'),
@@ -38,10 +39,9 @@ class NewHero(object):
 				"companions": [],
 				"guild_invites": [],
 				"requested_guilds": [],
-				"pigeon_coop_id": None
 			})
-
-		resp.data = msgpack.packb({"Info": "Successfully created a new hero with id: {}".format(result)})
+		self.heros.update_one({'_id': heroObject}, {'$set': {'pigeon_coop_id': pcoop.Coop.Create(heroObject.inserted_id)}})
+		resp.data = msgpack.packb({"Info": "Successfully created a new hero with id: {}".format(heroObject.inserted_id)})
 		resp.status = falcon.HTTP_201
 
 	#Do we want to do anything with this?
