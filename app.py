@@ -29,5 +29,8 @@ api.add_route('/hero/{uhid}/companions', hero.Companions("TODO"))
 api.add_route('/hero/{uhid}/key', hero.Key("TODO"))
 api.add_route('/hero/forgekey/{uiid}', hero.ForgeKey("TODO"))
 api.add_route('/hero/commissionkey', hero.CommissionKey("TODO"))
+api.add_route('/pigeoncoop/buildCoop', pigeoncoop.buildCoop("TODO"))
+api.add_route('/pigeoncoop/globalPigeonWaiting', pigeoncoop.globalPigeonWaiting("TODO"))
+api.add_route('/pigeoncoop/killPigeon', pigeoncoop.killPigeon("TODO"))
 
 #pidgeon related routes

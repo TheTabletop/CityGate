@@ -49,13 +49,13 @@ class globalPigeonWaiting(object):
 		
 	def on_get(self, req, resp):
 		coopId = self.db.heros.find_one({"_id": ObjectId(req.params_get('uhid'))}, projection=['ucid'])
-		num = self.coops.find_one({"_id": ObjectId(coopId)}, projection=['unread_messages'])
+		num = self.coops.find_one({"_id": coopId.get("_id")}, projection=['unread_messages'])
 		
 		if num is None:
 			resp.data = msgpack.packb({"Failed": "Unable to get number of unread messages"})
 			resp.status = falcon.HTTP_500
 		else:
-			resp.data = msgpack.packb({"unread_messages": num})
+			resp.data = msgpack.packb({"unread_messages": num.get('unread_messages')})
 			resp.status = falcon.HTTP_202
 
 			
@@ -69,7 +69,7 @@ class killPigeon(object):
 	def on_post(self, req, resp):
 		coopId = self.db.heros.find_one({"_id": ObjectId(req.params_get('uhid'))}, projection=['ucid'])
 		#remove pigeon from coop 
-		result = self.coops.update_one({"_id":ObjectId(coopId)}, {'$pull':{'pigeons':{'upid':{ObjectId(req.params_get('upid'))}}}})
+		result = self.coops.update_one({"_id":coopId.get("_id")}, {'$pull':{'pigeons':{'upid':{ObjectId(req.params_get('upid'))}}}})
 		if result.modified_count != 1:
 			resp.data = msgpack.packb({"Failed": "Unable to remove pigeon from coop"})
 			resp.status = falcon.HTTP_500
@@ -87,6 +87,15 @@ class killPigeon(object):
 			resp.data = msgpack.packb({"Success": "Successfully removed pigeon"})
 			resp.status = falcon.HTTP_202
 		
+#needs uhid in the req
+class pigeonRollCall(object)
+	def __init__(self, db_reference):
+		self.db = db_reference
+		self.db = MongoClient().greatLibrary
+		self.coops = self.db.pigeoncoops
 		
-			
+	def on_get(self, req, resp):
+		coopId = self.db.heros.find_one({"_id": ObjectId(req.params_get('uhid'))}, projection=['ucid'])
+		
+		pidgeonList = self.db.
 		
