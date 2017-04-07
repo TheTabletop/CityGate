@@ -52,6 +52,23 @@ class checkuhid(object):
         self.userAuth = self.db.userAuth
 
     def checkid(self, currUserID, sessionID):
-        result = self.userAuth.findone({'_id': ObjectId(sessionID)},projection=['uhid'])
+        result = self.userAuth.find_one({'_id': ObjectId(sessionID)},projection=['uhid'])
         return currUserID==result.get('uhid')
 
+class Tokens(object):
+    def __init__(self, db_reference):
+        self.db = db_reference
+        self.db = MongoClient().greatLibrary
+        self.userAuth = self.db.userAuth
+
+    def TokenExists(self, req, resp):
+        token = req.parmas_get('session_token'):
+        result = self.userAuth.find_one({'_id': ObjectId(token)})
+        if result is None:
+            msg = 'Invalid session token!'
+            raise falcon.HTTPBadRequest('Bad request', msg)
+    def HeroMatchesToken(self, req, resp, uhid):
+        result = self.userAuth.find_one({'_id': ObjectId(req.params_get('session_token'))})
+        if "{}".format(result.get('uhid')) != uhid:
+            msg = 'Session token not associated with appropriate hero'
+            raise falcon.HTTPBadRequest('Bad request', msg)
