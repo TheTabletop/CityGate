@@ -12,4 +12,4 @@ import datetime
 
 import resources.pigeoncoop as coop
 
-class 
+class NewPigeon(object):
