@@ -29,3 +29,5 @@ api.add_route('/hero/{uhid}/companions', hero.Companions("TODO"))
 api.add_route('/hero/{uhid}/key', hero.Key("TODO"))
 api.add_route('/hero/forgekey/{uiid}', hero.ForgeKey("TODO"))
 api.add_route('/hero/commissionkey', hero.CommissionKey("TODO"))
+
+#pidgeon related routes
