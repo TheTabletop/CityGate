@@ -27,7 +27,7 @@ class OnLogin(object):
         resp.data=msgpack.packb(json.dumps({'sessionID': result.inserted_id}))
         resp.status = falcon.HTTP_201
 
-    def on_get(self, req, resp, something_else):
+    def on_get(self, req, resp):
         resp.status = falcon.HTTP_404
 
 class updateExpire(object):
@@ -54,4 +54,3 @@ class checkuhid(object):
     def checkid(self, currUserID, sessionID):
         result = self.userAuth.findone({'_id': ObjectId(sessionID)},projection=['uhid'])
         return currUserID==result.get('uhid')
-

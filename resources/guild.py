@@ -45,7 +45,7 @@ class FormGuild(object):
 		resp.status = falcon.HTTP_201
 
 	#Do we want to do anything with this?
-	def on_get(self, req, resp, something_else):
+	def on_get(self, req, resp):
 		resp.status = falcon.HTTP_404
 
 class Guild(object):
