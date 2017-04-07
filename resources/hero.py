@@ -8,6 +8,7 @@ from bson import ObjectId
 import falcon
 import json
 import msgpack
+import hashlib
 
 #ALLOWED_IMAGE_TYPES = (
 #    'image/gif',
@@ -28,24 +29,25 @@ class NewHero(object):
 		self.heros = self.db.heros
 
 	def on_post(self, req, resp):
+		params = json.loads(req.stream.read().decode("utf-8") )
 		result = self.heros.insert_one(
 			{
-				"email": req.get_param('email'),
-				"playername": req.get_param('playername'),
-				"heroname" : req.get_param('heroname'),
-				"games": req.get_param('games'),
-				"key": req.get_param('key'),
+				"email": params.get('email'),
+				"playername": params.get('playername'),
+				"heroname" : params.get('heroname'),
+				"games": params.get('games'),
+				"key": hashlib.sha224(params.get('key').encode('utf-8')).hexdigest(),
 				"companions": [],
 				"guild_invites": [],
 				"requested_guilds": [],
-				"pigeon_coop_id": None
+				"ucid": None
 			})
 
 		resp.data = msgpack.packb({"Info": "Successfully created a new hero with id: {}".format(result)})
 		resp.status = falcon.HTTP_201
 
 	#Do we want to do anything with this?
-	def on_get(self, req, resp, something_else):
+	def on_get(self, req, resp):
 		resp.status = falcon.HTTP_404
 
 class Hero(object):
