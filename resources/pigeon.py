@@ -46,12 +46,18 @@ class Pigeon(object):
         self.db = db_reference
         self.db = MongoClient().greatLibrary
         self.pigeons = self.db.pigeons
+        self.coops = self.db.pigeoncoops
 
     def on_get(self, req, resp, ucid, upid):
-        pass
+        result = self.pigeons.find_one({"_id": ObjectId(upid)})
 
     def on_delete(self, req, resp, ucid, upid):
-        pass
+        resultForRemoveP = self.pigeons.update_one({"_id": ObjectId(upid)}, {"$pull": {"has_not_read": ObjectId(ucid), "participants": ObjectId(ucid)}})
+        resultForRemoveInC = coop.Pigeons.remove_pigeon(ucid, upid)
+
+        resp.data = msgpack.packb(json.dumps({"Success": "Removed hero from the pigeon's list of participants"}))
+        resp.status = falcon.HTTP_200        
+
 
 def Messages(object):
     def __init__(self, db_reference):

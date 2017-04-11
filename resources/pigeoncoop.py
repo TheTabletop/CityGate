@@ -96,7 +96,10 @@ class Pigeons(object):
         self.coops.update_one({'_id': ObjectId(ucid)}, {'$push': {'pigeons': {'upid': ObjectId(upid), 'last_update': datetime.datetime.utcnow(), 'seen': seen}}})
 
     def remove_pigeon(self, ucid, upid):
-        self.coops.update_one({'_id': ObjectId(ucid)}, {'$pull': {'pigeons': {'upid': ObjectId(upid)}}})
+        result = self.coops.find_one_and_update({'_id': ObjectId(ucid)}, {"$pull": {"pigeons": {"upid": ObjectId(upid)}}})
+        for pigeon in result.get("pigeons"):
+            if "{}".format(pigeon.get("upid") == upid and not pigeon.get("seen"):
+                self.coops.update_one({'_id': ObjectId(ucid)}, {'$inc': {"unseen_count": -1}})
 
 class Owner(object):
     def on_get(self, req, resp, ucid):
