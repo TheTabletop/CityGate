@@ -47,6 +47,5 @@ api.add_route('/search/guilds', search.AllGuilds("TODO"))
 api.add_route('/search/heros', search.AllHeros("TODO"))
 
 ### PIGEON COOP ROUTES
-api.add_route('/pigeoncoop/buildCoop', pigeoncoop.buildCoop("TODO"))
 api.add_route('/pigeoncoop/globalPigeonWaiting', pigeoncoop.globalPigeonWaiting("TODO"))
 api.add_route('/pigeoncoop/killPigeon', pigeoncoop.killPigeon("TODO"))
