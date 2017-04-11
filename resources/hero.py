@@ -10,6 +10,8 @@ import json
 import msgpack
 import hashlib
 
+import resources.pigeoncoop as pcoop
+
 #ALLOWED_IMAGE_TYPES = (
 #    'image/gif',
 #    'image/jpeg',
@@ -30,7 +32,7 @@ class NewHero(object):
 
 	def on_post(self, req, resp):
 		params = json.loads(req.stream.read().decode("utf-8") )
-		result = self.heros.insert_one(
+		heroObject = self.heros.insert_one(
 			{
 				"email": params.get('email'),
 				"playername": params.get('playername'),
@@ -42,8 +44,8 @@ class NewHero(object):
 				"requested_guilds": [],
 				"ucid": None
 			})
-
-		resp.data = msgpack.packb({"Info": "Successfully created a new hero with id: {}".format(result)})
+		self.heros.update_one({'_id': heroObject}, {'$set': {'ucid': pcoop.Coop.Create(heroObject.inserted_id).inserted_id}})
+		resp.data = msgpack.packb({"Info": "Successfully created a new hero with id: {}".format(heroObject.inserted_id)})
 		resp.status = falcon.HTTP_201
 
 	#Do we want to do anything with this?
