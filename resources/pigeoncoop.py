@@ -92,8 +92,8 @@ class Pigeons(object):
         resp.data = msgpack.packb(json.dumps({'pigeons': coop.get('pigeons')}))
         resp.status = falcon.HTTP_200
 
-    def add_pigeon(self, ucid, upid, sender_uhid):
-        self.coops.update_one({'_id': ObjectId(ucid)}, {'$push': {'pigeons': {'upid': ObjectId(upid), 'last_update': datetime.datetime.utcnow(), 'seen': (sender_uhid == ucid)}}})
+    def add_pigeon(self, ucid, upid, seen):
+        self.coops.update_one({'_id': ObjectId(ucid)}, {'$push': {'pigeons': {'upid': ObjectId(upid), 'last_update': datetime.datetime.utcnow(), 'seen': seen}}})
 
     def remove_pigeon(self, ucid, upid):
         self.coops.update_one({'_id': ObjectId(ucid)}, {'$pull': {'pigeons': {'upid': ObjectId(upid)}}})
