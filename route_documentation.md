@@ -38,9 +38,10 @@
   * [Pigeon](#pigeon)
   * [Messages](#messages)
 
-## Login Route
+# Login Route
+## Login
 www.todo.com/login
-### Login
+### on_post
 **Expects as json with the request**
 ```json
 {
@@ -52,33 +53,92 @@ www.todo.com/login
 ```json
 {
   "session_token": "<random alhpa numeric string>",
-  "uhid": "<unique_hero_id"
+  "uhid": "<unique_hero_id>"
 }
 ```
-#### on_post
-## Hero Routes
-### NewHero
-#### on_post
-### Hero
-#### on_get
-#### on_post
-#### on_delete
-### PlayerName
-#### on_get
-#### on_post
-### HeroName
-#### on_get
-#### on_post
-### Email
-#### on_get
-#### on_post
-### Companions
-#### on_get
-#### on_post
-#### on_delete
-### Key
-#### on_post
-### ForgeKey
-#### on_post
-### CommissionKey
-#### on_post
+# Hero Routes
+## NewHero
+### on_post
+## Hero
+### on_get
+### on_post
+### on_delete
+## PlayerName
+### on_get
+### on_post
+## HeroName
+### on_get
+### on_post
+## Email
+### on_get
+### on_post
+## Companions
+### on_get
+### on_post
+### on_delete
+## Key
+### on_post
+## ForgeKey
+### on_post
+## CommissionKey
+### on_post
+
+# Guild Routes
+## FormGuild
+### on_post
+## Guild
+### on_get
+### on_post
+### on_delete
+## Name
+### on_get
+### on_post
+## Charter
+### on_get
+### on_post
+## Session
+### on_get
+### on_post
+## Location
+### on_get
+### on_post
+## Games
+### on_get
+### on_post
+### on_delete
+## Members
+### on_get
+### on_delete
+## RequestToJoinGuild
+### on_post
+### on_delete
+## RespondToHeroRequest
+### on_post
+## InviteHeroToJoin
+### on_post
+### on_delete
+## RespondToGuildInvite
+### on_post
+## LeaveGuild
+### on_post
+
+# Pigeon Coop Routes
+## Coop
+### on_get
+## Pigeons
+### on_get
+## Owner
+### on_get
+## UnseenCount
+### on_get
+
+# Pigeon Routes
+## NewPigeon
+### on_post
+## Pigeon
+### on_get
+### on_delete
+## Messages
+### on_get
+### on_post
+### on_delete
