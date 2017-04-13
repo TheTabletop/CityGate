@@ -45,7 +45,7 @@ class NewHero(object):
 				"ucid": None
 			})
 		self.heros.update_one({'_id': heroObject}, {'$set': {'ucid': pcoop.Coop.Create(heroObject.inserted_id).inserted_id}})
-		resp.data = msgpack.packb({"Info": "Successfully created a new hero with id: {}".format(heroObject.inserted_id)})
+		resp.data = msgpack.packb({"uhid": "{}".format(heroObject.inserted_id)})
 		resp.status = falcon.HTTP_201
 
 	#Do we want to do anything with this?

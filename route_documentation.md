@@ -1,6 +1,8 @@
 # API Routing Documentation
 **NOTE:** It has not been put up on github yet, so the domain is listed as www.todo.com/
 
+If you think a route should be accepting/returning different things or if routes are missing, please slack members of the backend team (and possibly even create a [ticket](https://github.com/TheTabletop/CityGate/issues) on github).
+
 ## Table Of Contents
 * [Login Route](#login-route)
   * [Login](#login)
@@ -42,14 +44,16 @@
 ## Login
 www.todo.com/login
 ### on_post
-**Expects as json with the request**
+If successful, status is 201
+
+**Expects a json with the request**
 ```json
 {
   "hero": "<hero_name>",
   "key": "<heros_password>"
 }
 ```
-**Returns as json with the response**
+**Returns a json with the response**
 ```json
 {
   "session_token": "<random alhpa numeric string>",
@@ -58,7 +62,23 @@ www.todo.com/login
 ```
 # Hero Routes
 ## NewHero
+www.todo.com/hero/create
 ### on_post
+If successful, status is 201
+**Expects a json with the request**
+```json
+{
+  "email": "<email address>",
+  "key": "<password>",
+  "playername": "<persons_name>",
+  "heroname" : "<what they want to be called>",
+  "games": ["game1", "game2", "game3", ...] #optional
+}
+```
+**Returns a json with the response**
+```json
+{"uhid": "<created hero uhid"}
+```
 ## Hero
 ### on_get
 ### on_post
