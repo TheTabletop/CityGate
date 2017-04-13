@@ -75,7 +75,7 @@ class Guild(object):
 	def on_post(self, req, resp, ugid):
 		pass
 
-class GuildName(object):
+class Name(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
 		self.db = MongoClient().greatLibrary

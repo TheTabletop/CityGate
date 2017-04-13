@@ -138,7 +138,7 @@ class HeroName(object):
 			resp.data = msgpack.packb({"heroname": hName})
 			resp.status = falcon.HTTP_200
 
-class HeroEmail(object):
+class Email(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
 		self.db = MongoClient().greatLibrary
