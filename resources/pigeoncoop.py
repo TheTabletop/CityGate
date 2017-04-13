@@ -100,6 +100,7 @@ class Pigeons(object):
         for pigeon in result.get("pigeons"):
             if "{}".format(pigeon.get("upid") == upid and not pigeon.get("seen"):
                 self.coops.update_one({'_id': ObjectId(ucid)}, {'$inc': {"unseen_count": -1}})
+                self.coops.update_one({'_id': ObjectId(ucid)}, {'$inc': {"unseen_count": -1}})
 
 class Owner(object):
     def on_get(self, req, resp, ucid):
