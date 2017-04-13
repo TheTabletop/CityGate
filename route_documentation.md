@@ -1,5 +1,5 @@
 # API Routing Documentation
-**NOTE:** It has not been put up on github yet, so the domain is listed as www.<todo>.com/
+**NOTE:** It has not been put up on github yet, so the domain is listed as www.todo.com/
 
 ## Table Of Contents
 * [Login Route](#login-route)
@@ -39,7 +39,22 @@
   * [Messages](#messages)
 
 ## Login Route
+www.todo.com/login
 ### Login
+**Expects as json with the request**
+```json
+{
+  "hero": "<hero_name>",
+  "key": "<heros_password>"
+}
+```
+**Returns as json with the response**
+```json
+{
+  "session_token": "<random alhpa numeric string>",
+  "uhid": "<unique_hero_id"
+}
+```
 #### on_post
 ## Hero Routes
 ### NewHero

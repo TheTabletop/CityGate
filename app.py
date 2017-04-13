@@ -3,6 +3,7 @@ import msgpack
 import resources.hero as hero
 import resources.guild as guild
 import resources.search as search
+import resources.userAuth as auth
 
 api = application = falcon.API()
 
@@ -19,8 +20,12 @@ class CheckCabbage(object):
     def on_get(self, req, resp):
         resp.status = falcon.HTTP_200
         resp.data = msgpack.packb({"Msg": "We've got cabbages my liege!"})
+
 ### HEALTH CHECK
 api.add_route('/checkCabbage', CheckCabbage())
+
+### Login
+api.add_route('/login', auth.Login("TODO"))
 
 ### HERO RELATED ROUTES
 api.add_route('/hero/{uhid}', hero.Hero("TODO"))
