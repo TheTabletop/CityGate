@@ -82,7 +82,8 @@ def Messages(object):
         result = self.pigeons.find_one({"_id": ObjectId(upid)})
 
         if result is not None:
-            toNotify = result.
+            #toNotify = result.
+            pass
         else:
             resp.data = msgpack.packb(json.dumps({"Error": "Unable to find pigeon to add message"}))
             resp.status = falon.HTTP_404

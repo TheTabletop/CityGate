@@ -10,7 +10,7 @@ import json
 import msgpack
 import datetime
 
-class Coop(object)
+class Coop(object):
     def __init__(self, db_reference):
         self.db = db_reference
         self.db = MongoClient().greatLibrary
@@ -30,11 +30,11 @@ class Coop(object)
         resp.data = msgpack.packb(json.dumps(coop))
         resp.status = falcon.HTTP_200
 
-	def increase_count(self, ucid):
-		self.coops.update_one({'_id': ObjectId(ucid)}, {"$inc": {"unseen_count": 1}})
+    def increase_count(self, ucid):
+    	self.coops.update_one({'_id': ObjectId(ucid)}, {"$inc": {"unseen_count": 1}})
 
-	def decrease_count(self, ucid):
-		self.coops.update_one({'_id': ObjectId(ucid)}, {"$inc": {"unseen_count": -1}})
+    def decrease_count(self, ucid):
+    	self.coops.update_one({'_id': ObjectId(ucid)}, {"$inc": {"unseen_count": -1}})
 
 #Needs the uhid in the req object
 class globalPigeonWaiting(object):
@@ -98,7 +98,7 @@ class Pigeons(object):
     def remove_pigeon(self, ucid, upid):
         result = self.coops.find_one_and_update({'_id': ObjectId(ucid)}, {"$pull": {"pigeons": {"upid": ObjectId(upid)}}})
         for pigeon in result.get("pigeons"):
-            if "{}".format(pigeon.get("upid") == upid and not pigeon.get("seen"):
+            if "{}".format(pigeon.get("upid")) == upid and not pigeon.get("seen"):
                 self.coops.update_one({'_id': ObjectId(ucid)}, {'$inc': {"unseen_count": -1}})
 
 class Owner(object):

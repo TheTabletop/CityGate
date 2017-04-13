@@ -3,6 +3,8 @@ import msgpack
 import resources.hero as hero
 import resources.guild as guild
 import resources.search as search
+import resources.pigeoncoop as pigeoncoop
+import resources.pigeon as pigeon
 
 api = application = falcon.API()
 
