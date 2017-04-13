@@ -3,6 +3,8 @@ import msgpack
 import resources.hero as hero
 import resources.guild as guild
 import resources.search as search
+import resources.pigeoncoop as pcoop
+import resources.pigeon as pigeon
 
 api = application = falcon.API()
 
@@ -47,5 +49,10 @@ api.add_route('/search/guilds', search.AllGuilds("TODO"))
 api.add_route('/search/heros', search.AllHeros("TODO"))
 
 ### PIGEON COOP ROUTES
-api.add_route('/pigeoncoop/globalPigeonWaiting', pigeoncoop.globalPigeonWaiting("TODO"))
-api.add_route('/pigeoncoop/killPigeon', pigeoncoop.killPigeon("TODO"))
+api.add_route('/pigeoncoop/{ucid}', pcoop.Coop("TODO"))
+api.add_route('/pigeoncoop/{ucid}/owner', pcoop.Coop("TODO")) #Kinda a useless route...
+api.add_route('/pigeoncoop/{ucid}/unseencount', pcoop.UnseenCount("TODO"))
+
+### PIGEON ROUTES
+api.add_route('/pigeon/new/', pigeon.NewPigeon("TODO"))
+api.add_route
