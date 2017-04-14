@@ -43,46 +43,91 @@ If you think a route should be accepting/returning different things or if routes
 # Login Route
 ## Login
 www.todo.com/login
+**Send session with requests:** No
 ### on_post
-If successful, status is 201
+__Returns 202 on success_
 
 **Expects a json with the request**
-```json
+```python
 {
   "hero": "<hero_name>",
   "key": "<heros_password>"
 }
 ```
 **Returns a json with the response**
-```json
+```python
 {
-  "session_token": "<random alhpa numeric string>",
+  "session_hash": "<random alhpa numeric string>",
   "uhid": "<unique_hero_id>"
 }
 ```
 # Hero Routes
 ## NewHero
 www.todo.com/hero/create
+**Send session with requests:** No
 ### on_post
-If successful, status is 201
+__Returns 201 on success__
 **Expects a json with the request**
-```json
+```python
 {
   "email": "<email address>",
   "key": "<password>",
   "playername": "<persons_name>",
   "heroname" : "<what they want to be called>",
   "games": ["game1", "game2", "game3", ...] #optional
+  "backstory": "<backstory>" #optional
 }
 ```
 **Returns a json with the response**
-```json
-{"uhid": "<created hero uhid"}
+```python
+{
+  "uhid": "<created hero uhid>"
+}
 ```
 ## Hero
+www.todo.com/hero/{uhid}
+
 ### on_get
+**Send session token with requests:** Yes
+__returns 200 on success__
+Used when you want to get info about a hero. Returns slightly different information based on whether the session_hash is related to the requested hero or not. No json parameters are required to be sent.
+**Returns a json with the response**
+```python
+{
+  "_id": "<uhid>",
+  "playername": "<player's name>",
+  "heroname" : "<hero's name>",
+  "games": ["list", "of", "games"],
+  "companions": ["list", "of", "friends"],
+  "guilds": ["list", "of", "guild", "ugids"]
+  # the below are only returned if session token relates to hero requested (i.e. you request yourself)
+  "email": "heros email",
+  "guild_invites": ["guild", "ugids", "who", "invited", "hero"],
+  "requested_guilds": ["guild", "ugids", "hero", "request", "to join"],
+  "ucid": "<ucid>"
+}
+```
+
 ### on_post
+**Send session token with requests:** Yes
+__returns 202 on success__
+Used for updating multiple data variables about the hero at once, can only be used if session token relates to the hero trying to be updated (i.e. you can only update yourself). Each key value pair is **OPTIONAL**.
+**Expects a json with the request (it can be empty if you want)**
+```python
+{
+  "playername": "<player's new name>",
+  "heroname" : "<hero's new name>",
+  "games": ["list", "of", "games"],
+  "email": "<new email>",
+  "backstory": "updated backstory>"
+}
+```
+
+**Send session token with requests:** Yes
 ### on_delete
+Used for deleting a hero (NOOOOOOO). No json parameters are required to be sent. If you sent any, they will be ignored.
+__Returns 202 on success__
+
 ## PlayerName
 ### on_get
 ### on_post
