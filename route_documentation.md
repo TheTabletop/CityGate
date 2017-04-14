@@ -43,10 +43,10 @@ If you think a route should be accepting/returning different things or if routes
 # Login Route
 ## Login
 www.todo.com/login
-
 ### on_post
 * **Send session with requests:** No
 * __Returns 202 on success__
+
 **Expects a json with the request**
 ```python
 {
@@ -64,12 +64,12 @@ www.todo.com/login
 # Hero Routes
 ## NewHero
 www.todo.com/hero/create
-
 ### on_post
 * **Send session with requests:** No
 * __Returns 201 on success__
 
 Used when a new hero (user) wants to create an account.
+
 **Expects a json with the request**
 ```python
 {
@@ -89,11 +89,12 @@ Used when a new hero (user) wants to create an account.
 ```
 ## Hero
 www.todo.com/hero/{uhid}
-
 ### on_get
 * **Send session token with requests:** Yes
 * __returns 200 on success__
+
 Used when you want to get info about a hero. Returns slightly different information based on whether the session_hash is related to the requested hero or not. No json parameters are required to be sent.
+
 **Returns a json with the response**
 ```python
 {
@@ -114,7 +115,9 @@ Used when you want to get info about a hero. Returns slightly different informat
 ### on_post
 * **Send session token with requests:** Yes
 * __returns 202 on success__
+
 Used for updating multiple data variables about the hero at once, can only be used if session token relates to the hero trying to be updated (i.e. you can only update yourself). Each key value pair is **OPTIONAL**.
+
 **Expects a json with the request (it can be empty if you want)**
 ```python
 {
@@ -129,6 +132,7 @@ Used for updating multiple data variables about the hero at once, can only be us
 ### on_delete
 * **Send session token with requests:** Yes
 * __Returns 742 on success__
+
 Used for deleting a hero (NOOOOOOO). No json parameters are required to be sent. If you sent any, they will be ignored.
 
 ## PlayerName
@@ -136,6 +140,7 @@ www.todo.com/hero/{uhid}/playername
 ### on_get
 * **Send session token with requests:** Yes
 * __returns 200 on success__
+
 Used for getting the name of the person behind the hero.
 
 **Returns a json with the response**
@@ -149,6 +154,7 @@ Used for getting the name of the person behind the hero.
 ### on_post
 * **Send session token with requests:** Yes
 * __returns 202 on success__
+
 Used for getting updating a hero's name. Session token must be associated with the hero trying to be updated (i.e. you can only update your own hero name)
 
 **Expects a json with the request**
@@ -171,6 +177,7 @@ www.todo.com/hero/{uhid}/heroname
 ### on_get
 * **Send session token with requests:** Yes
 * __returns 200 on success__
+
 Used for getting the name of the hero.
 
 **Returns a json with the response**
@@ -184,6 +191,7 @@ Used for getting the name of the hero.
 ### on_post
 * **Send session token with requests:** Yes
 * __returns 202 on success__
+
 Used for getting updating a hero's name. Session token must be associated with the hero try to be updated (i.e. you can only update your own hero name)
 
 **Expects a json with the request**
@@ -205,6 +213,7 @@ www.todo.com/hero/{uhid}/email
 ### on_get
 * **Send session token with requests:** Yes
 * __returns 200 on success__
+
 Used for getting the hero's email.
 
 **Returns a json with the response**
@@ -218,6 +227,7 @@ Used for getting the hero's email.
 ### on_post
 * **Send session token with requests:** Yes
 * __returns 202 on success__
+
 Used for getting updating a hero's email. Session token must be associated with the hero try to be updated (i.e. you can only update your own hero name)
 
 **Expects a json with the request**
