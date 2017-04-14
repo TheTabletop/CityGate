@@ -1,3 +1,4 @@
+d
 # API Routing Documentation
 **NOTE:** It has not been put up on github yet, so the domain is listed as www.todo.com/
 
@@ -245,9 +246,33 @@ Used for getting updating a hero's email. Session token must be associated with 
 }
 ```
 ## Companions
+www.todo.com/hero/{uhid}/companions
 ### on_get
-### on_post
+* **Send session token with requests:** Yes
+* __returns 200 on success__
+
+Used for the list of the hero's companions (friends).
+
+**Returns a json with the response**
+```python
+{
+  "_id": "<uhid>",
+  "companions": ["List", "of", "companions"]
+}
+```
+
 ### on_delete
+* **Send session token with requests:** Yes
+* __returns 202 on success__
+
+Used for removing a companion from a heros companion list. Session token must be associated with either the uhid provided in url of the http request or the `uhid_companion` in the data json data sent with the http request. 
+
+**Expects a json with the request**
+```python
+{
+  "uhid_companion": "<uhid of hero you want to remove>"
+}
+```
 ## Key
 ### on_post
 ## ForgeKey
