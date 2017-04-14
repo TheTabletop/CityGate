@@ -125,20 +125,112 @@ Used for updating multiple data variables about the hero at once, can only be us
 }
 ```
 
-**Send session token with requests:** Yes
 ### on_delete
+**Send session token with requests:** Yes
+__Returns 742 on success__
 Used for deleting a hero (NOOOOOOO). No json parameters are required to be sent. If you sent any, they will be ignored.
-__Returns 202 on success__
 
 ## PlayerName
+www.todo.com/hero/{uhid}/playername
 ### on_get
+**Send session token with requests:** Yes
+__returns 200 on success__
+Used for getting the name of the person behind the hero.
+
+**Returns a json with the response**
+```python
+{
+  "_id": "<uhid>",
+  "playername": "<player's name>"
+}
+```
+
 ### on_post
+**Send session token with requests:** Yes
+__returns 202 on success__
+Used for getting updating a hero's name. Session token must be associated with the hero trying to be updated (i.e. you can only update your own hero name)
+
+**Expects a json with the request**
+```python
+{
+  "playername": "<player's new name>"
+}
+```
+
+**Returns a json with the response**
+```python
+{
+  "_id": "<uhid>",
+  "playername": "<player's name>"
+}
+```
+
 ## HeroName
 ### on_get
+**Send session token with requests:** Yes
+__returns 200 on success__
+Used for getting the name of the hero.
+
+**Returns a json with the response**
+```python
+{
+  "_id": "<uhid>",
+  "heroname": "<hero's name>"
+}
+```
+
 ### on_post
+**Send session token with requests:** Yes
+__returns 202 on success__
+Used for getting updating a hero's name. Session token must be associated with the hero try to be updated (i.e. you can only update your own hero name)
+
+**Expects a json with the request**
+```python
+{
+  "heroname": "<hero's new name>"
+}
+```
+
+**Returns a json with the response**
+```python
+{
+  "_id": "<uhid>",
+  "heroname": "<hero's name>"
+}
+```
 ## Email
 ### on_get
+**Send session token with requests:** Yes
+__returns 200 on success__
+Used for getting the hero's email.
+
+**Returns a json with the response**
+```python
+{
+  "_id": "<uhid>",
+  "email": "<hero's email>"
+}
+```
+
 ### on_post
+**Send session token with requests:** Yes
+__returns 202 on success__
+Used for getting updating a hero's email. Session token must be associated with the hero try to be updated (i.e. you can only update your own hero name)
+
+**Expects a json with the request**
+```python
+{
+  "email": "<hero's new email>"
+}
+```
+
+**Returns a json with the response**
+```python
+{
+  "_id": "<uhid>",
+  "email": "<hero's email>"
+}
+```
 ## Companions
 ### on_get
 ### on_post
