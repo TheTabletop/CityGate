@@ -43,9 +43,10 @@ If you think a route should be accepting/returning different things or if routes
 # Login Route
 ## Login
 www.todo.com/login
-**Send session with requests:** No
+
 ### on_post
-__Returns 202 on success_
+**Send session with requests:** No
+__Returns 202 on success__
 
 **Expects a json with the request**
 ```python
@@ -67,6 +68,7 @@ www.todo.com/hero/create
 **Send session with requests:** No
 ### on_post
 __Returns 201 on success__
+Used when a new hero (user) wants to create an account.
 **Expects a json with the request**
 ```python
 {
