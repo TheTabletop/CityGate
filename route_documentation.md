@@ -265,7 +265,7 @@ Used for the list of the hero's companions (friends).
 * **Send session token with requests:** Yes
 * __returns 202 on success__
 
-Used for removing a companion from a heros companion list. Session token must be associated with either the uhid provided in url of the http request or the `uhid_companion` in the data json data sent with the http request. 
+Used for removing a companion from a heros companion list. Session token must be associated with either the uhid provided in url of the http request or the `uhid_companion` in the data json data sent with the http request.
 
 **Expects a json with the request**
 ```python
@@ -274,12 +274,49 @@ Used for removing a companion from a heros companion list. Session token must be
 }
 ```
 ## Key
+www.todo.com/hero/{uhid}/key
 ### on_post
-## ForgeKey
-### on_post
-## CommissionKey
-### on_post
+* **Send session token with requests:** Yes
+* __returns 202 on success__
 
+Used for updating the password of a logged in hero. Session token must be associated with hero who's password is being updated.
+
+**Expects a json with the request**
+```python
+{
+  "newkey": "<their new pass>"
+  "oldkey": "<their old pass>"
+}
+```
+## ForgeKey
+www.todo.com/hero/forgekey/{uiid}
+### on_post
+* **Send a key forge token with :** No
+* __returns 202 on success__
+
+Used for forging a key that has been commissioned (i.e. a user setting their new password after forgetting it)
+
+**Expects a json with the request**
+```python
+{
+  "commission_id": "<the commission request>"
+  "new_key": "<the new password>"
+}
+```
+## CommissionKey
+www.todo.com/hero/forgekey/
+### on_post
+* **Send a key forge token with :** No
+* __returns 202 on success__
+
+Used for commissioning a new key for a hero (when a person forgets their password). Send a link in an e-mail to the e-mail address provided (if there is a hero associated with the e-mail) with a link ending with /{commission_id}. This link should bring them to a page where they can reset their password using the ForgeKey route.
+
+**Expects a json with the request**
+```python
+{
+  "email": "<assumed account email>"
+}
+```
 # Guild Routes
 ## FormGuild
 ### on_post
