@@ -319,60 +319,85 @@ Used for commissioning a new key for a hero (when a person forgets their passwor
 ```
 # Guild Routes
 ## FormGuild
+www.todo.com/guild/formguild
 ### on_post
+* **Send a key forge token with :** No
+* __returns 201 on success__
+
+Used for creating a new guild!
 ## Guild
+www.todo.com/guild/{ugid}
 ### on_get
 ### on_post
 ### on_delete
 ## Name
+www.todo.com/guild/{ugid}/name
 ### on_get
 ### on_post
 ## Charter
+www.todo.com/guild/{ugid}/charter
 ### on_get
 ### on_post
 ## Session
+www.todo.com/guild/{ugid}/session
 ### on_get
 ### on_post
 ## Location
+www.todo.com/guild/{ugid}/location
 ### on_get
 ### on_post
 ## Games
+www.todo.com/guild/{ugid}/games
 ### on_get
 ### on_post
 ### on_delete
 ## Members
+www.todo.com/guild/{ugid}/members
 ### on_get
 ### on_delete
 ## RequestToJoinGuild
+www.todo.com/guild/{ugid}/request/{uhid}
 ### on_post
 ### on_delete
 ## RespondToHeroRequest
+www.todo.com/guild/{ugid}/requestresponse/{uhid}
 ### on_post
 ## InviteHeroToJoin
+www.todo.com/guild/{ugid}/invite/{uhid}
 ### on_post
 ### on_delete
 ## RespondToGuildInvite
+www.todo.com/guild/{ugid}/inviteresponse/{uhid}
 ### on_post
 ## LeaveGuild
+www.todo.com/guild/{ugid}/leave/{uhid}
 ### on_post
 
 # Pigeon Coop Routes
+**NOTE**: The ucid (unique coop id) is the same as the associated hero's uhid (unique hero id). Thus if you know the hero's uhid, you automatically have what you need get that hero's pigeon coop (inbox).
 ## Coop
+www.todo.com/coop/{ucid}
 ### on_get
 ## Pigeons
+www.todo.com/coop/{ucid}/pigeons
 ### on_get
 ## Owner
+www.todo.com/coop/{ucid}/owner (**note**: somewhat useless considering the ucid is the uhid)
 ### on_get
 ## UnseenCount
+www.todo.com/coop/{ucid}/unseencount
 ### on_get
 
 # Pigeon Routes
 ## NewPigeon
+www.todo.com/coop/{ucid}/pigeon/newpigeon
 ### on_post
 ## Pigeon
+www.todo.com/coop/{ucid}/pigeon/{upid}
 ### on_get
 ### on_delete
 ## Messages
+www.todo.com/coop/{ucid}/pigeon/{upid}/messages
 ### on_get
 ### on_post
 ### on_delete
