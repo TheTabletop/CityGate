@@ -1,4 +1,3 @@
-d
 # API Routing Documentation
 **NOTE:** It has not been put up on github yet, so the domain is listed as www.todo.com/
 
@@ -321,83 +320,248 @@ Used for commissioning a new key for a hero (when a person forgets their passwor
 ## FormGuild
 www.todo.com/guild/formguild
 ### on_post
-* **Send a key forge token with :** No
+* **Send a key forge token with :** Yes
 * __returns 201 on success__
 
 Used for creating a new guild!
+
+**Expects a json with the request**
+```python
+{
+  "guildname": "<name of guild>",
+  "charter": "<lots of text>",
+  "location": "<location>"
+  "games": ["list", "of", "games", "guild", "plays"], #optional
+  "creator": "<hero's uhid>"
+  "session": {"date": "<timestamp>", "game": "<game>", "location": "<location>"}, #Optional
+  "invite": ["list", "of", "uhids"] #optional
+}
+```
+
+**Returns a json with the response**
+```python
+{
+  "ugid": "<ugid>",
+  "guildname": "<guildname>"
+}
+```
+
 ## Guild
 www.todo.com/guild/{ugid}
 ### on_get
+* **Send a key forge token with :** Yes
+* __returns 200 on success__
+
+Returns following if hero is an admin of the guild
+```Python
+{
+  "guildname": "<guild name>",
+  "charter": "<guild charter",
+  "location": "<location>",
+  "games": ["list", "of", "games"],
+  "members": ["list", "of", "members"],
+  "future_sessions": ["up", "coming", "sessions"],
+  "previous_sessions": ["past", "sessions"],
+  "hero_requests": ["heros", "asked", "to", "join"],
+  "invited_heros": ["heros", "invited", "to", "join"]
+}
+```
+
+Returns following if hero is just a member of the guild
+```Python
+{
+  "guildname": "<guild name>",
+  "charter": "<guild charter",
+  "location": "<location>",
+  "games": ["list", "of", "games"],
+  "members": ["list", "of", "members"],
+  "future_sessions": ["up", "coming", "sessions"],
+  "previous_sessions": ["past", "sessions"]
+}
+```
+
+Returns following if hero is not part of guild
+```Python
+{
+  "guildname": "<guild name>",
+  "charter": "<guild charter",
+  "games": ["list", "of", "games"],
+  "members": ["list", "of", "members"],
+  "next_session": {"start": "<start-ts>", "game": "<game to play>"},
+  "previous_sessions": ["past", "sessions"]
+}
+```
+
+
 ### on_post
+* **Send a key forge token with :** Yes
+* __returns 202 on success__
+
+**Expects a json with the request**
+```python
+{
+  "guildname": "<name of guild>", #optional
+  "charter": "<lots of text>", #optional
+  "location": "<location>" #optional
+  "remove_games": ["remove", "these", "games"], #optional
+  "add_games": ["add", "these", "games"] #optional
+}
+```
 ### on_delete
+* **Send a key forge token with :** Yes
+* __returns 202 on success__
+
 ## Name
 www.todo.com/guild/{ugid}/name
 ### on_get
+* **Send a key forge token with :** Yes
+* __returns 200 on success__
+
 ### on_post
+* **Send a key forge token with :** Yes
+* __returns 202 on success__
+
 ## Charter
 www.todo.com/guild/{ugid}/charter
 ### on_get
+* **Send a key forge token with :** Yes
+* __returns 200 on success__
+
 ### on_post
+* **Send a key forge token with :** Yes
+* __returns 202 on success__
+
 ## Session
 www.todo.com/guild/{ugid}/session
 ### on_get
+* **Send a key forge token with :** Yes
+* __returns 200 on success__
+
 ### on_post
+* **Send a key forge token with :** Yes
+* __returns 202 on success__
+
 ## Location
 www.todo.com/guild/{ugid}/location
 ### on_get
+* **Send a key forge token with :** Yes
+* __returns 200 on success__
+
 ### on_post
+* **Send a key forge token with :** Yes
+* __returns 202 on success__
+
 ## Games
 www.todo.com/guild/{ugid}/games
 ### on_get
+* **Send a key forge token with :** Yes
+* __returns 200 on success__
+
 ### on_post
+* **Send a key forge token with :** Yes
+* __returns 202 on success__
+
 ### on_delete
+* **Send a key forge token with :** Yes
+* __returns 202 on success__
+
 ## Members
 www.todo.com/guild/{ugid}/members
 ### on_get
+* **Send a key forge token with :** Yes
+* __returns 200 on success__
+
 ### on_delete
+* **Send a key forge token with :** Yes
+* __returns 202 on success__
+
 ## RequestToJoinGuild
 www.todo.com/guild/{ugid}/request/{uhid}
 ### on_post
+* **Send a key forge token with :** Yes
+* __returns 202 on success__
+
 ### on_delete
+* **Send a key forge token with :** Yes
+* __returns 202 on success__
+
 ## RespondToHeroRequest
 www.todo.com/guild/{ugid}/requestresponse/{uhid}
 ### on_post
+* **Send a key forge token with :** Yes
+* __returns 202 on success__
+
 ## InviteHeroToJoin
 www.todo.com/guild/{ugid}/invite/{uhid}
 ### on_post
+* **Send a key forge token with :** Yes
+* __returns 202 on success__
+
 ### on_delete
+* **Send a key forge token with :** Yes
+* __returns 202 on success__
+
 ## RespondToGuildInvite
 www.todo.com/guild/{ugid}/inviteresponse/{uhid}
 ### on_post
+* **Send a key forge token with :** Yes
+* __returns 202 on success__
+
 ## LeaveGuild
 www.todo.com/guild/{ugid}/leave/{uhid}
 ### on_post
+* **Send a key forge token with :** Yes
+* __returns 202 on success__
 
 # Pigeon Coop Routes
 **NOTE**: The ucid (unique coop id) is the same as the associated hero's uhid (unique hero id). Thus if you know the hero's uhid, you automatically have what you need get that hero's pigeon coop (inbox).
 ## Coop
 www.todo.com/coop/{ucid}
 ### on_get
+* **Send a key forge token with :** Yes
+* __returns 200 on success__
+
 ## Pigeons
 www.todo.com/coop/{ucid}/pigeons
 ### on_get
+* **Send a key forge token with :** Yes
+* __returns 200 on success__
+
 ## Owner
-www.todo.com/coop/{ucid}/owner (**note**: somewhat useless considering the ucid is the uhid)
+www.todo.com/coop/{ucid}/owner (**note**: somewhat useless considering the ucid is the uhid and you can only access the coop if you own it...)
 ### on_get
+* **Send a key forge token with :** Yes
+* __returns 200 on success__
+
 ## UnseenCount
 www.todo.com/coop/{ucid}/unseencount
 ### on_get
+* **Send a key forge token with :** Yes
+* __returns 202 on success__
 
 # Pigeon Routes
 ## NewPigeon
 www.todo.com/coop/{ucid}/pigeon/newpigeon
 ### on_post
+* **Send a key forge token with :** Yes
+* __returns 202 on success__
+
 ## Pigeon
 www.todo.com/coop/{ucid}/pigeon/{upid}
 ### on_get
+* **Send a key forge token with :** Yes
+* __returns 200 on success__
+
 ### on_delete
+* **Send a key forge token with :** Yes
+* __returns 202 on success__
+
 ## Messages
 www.todo.com/coop/{ucid}/pigeon/{upid}/messages
 ### on_get
+* **Send a key forge token with :** Yes
+* __returns 200 on success__
+
 ### on_post
-### on_delete
+* **Send a key forge token with :** Yes
+* __returns 202 on success__
