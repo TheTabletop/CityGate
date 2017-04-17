@@ -643,9 +643,13 @@ www.todo.com/guild/{ugid}/request/{uhid}
 * **Send session token with requests:** Yes
 * __returns 202 on success__
 
+Uhid in url is must match the uhid associated with the session token. Uhid in the url is the uhid of the hero requesting to join.
+
 ### on_delete
 * **Send session token with requests:** Yes
 * __returns 202 on success__
+
+Uhid in url is must match the uhid associated with the session token. Uhid in the url is the uhid of the hero that request to join.
 
 ## RespondToHeroRequest
 www.todo.com/guild/{ugid}/requestresponse/{uhid}
@@ -653,21 +657,49 @@ www.todo.com/guild/{ugid}/requestresponse/{uhid}
 * **Send session token with requests:** Yes
 * __returns 202 on success__
 
+Uhid associated with session token must be an admin of the guild specified by the ugid in the url.
+
+**Expect a json with the request**
+```python
+{
+  "decision": True/False
+}
+```
+
+* Decision = True --> add uhid to members list and remove from requests list
+* Decision = False --> remove uhid from requests lists
+
 ## InviteHeroToJoin
 www.todo.com/guild/{ugid}/invite/{uhid}
 ### on_post
 * **Send session token with requests:** Yes
 * __returns 202 on success__
 
+Uhid associated with the session token must be an admin of the guild specified by the ugid in the url. The uhid in the url is that uhid of the hero that is being invited
+
 ### on_delete
 * **Send session token with requests:** Yes
 * __returns 202 on success__
+
+Uhid associated with the session token must be an admin of the guild specified by the ugid in the url. The uhid in the url is that uhid of the hero being uninvited.
 
 ## RespondToGuildInvite
 www.todo.com/guild/{ugid}/inviteresponse/{uhid}
 ### on_post
 * **Send session token with requests:** Yes
 * __returns 202 on success__
+
+Uhid associated with session token must be the uhid in the url.
+
+**Expect a json with the request**
+```python
+{
+  "decision": True/False
+}
+```
+
+* Decision = True --> add ugid to members list of guild and remove from hero's invites list
+* Decision = False --> remove ugid from hero's invites list
 
 ## LeaveGuild
 www.todo.com/guild/{ugid}/leave/{uhid}
