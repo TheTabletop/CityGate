@@ -10,7 +10,7 @@ import json
 import msgpack
 import datetime
 
-class Coop(object)
+class Coop(object):
     def __init__(self, db_reference):
         self.db = db_reference
         self.db = MongoClient().greatLibrary

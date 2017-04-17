@@ -38,6 +38,7 @@ class NewHero(object):
 				"playername": params.get('playername'),
 				"heroname" : params.get('heroname'),
 				"games": params.get('games'),
+				"backstory": params.get('backstory')
 				"key": hashlib.sha224(params.get('key').encode('utf-8')).hexdigest(),
 				"companions": [],
 				"guild_invites": [],
@@ -45,7 +46,7 @@ class NewHero(object):
 				"ucid": None
 			})
 		self.heros.update_one({'_id': heroObject}, {'$set': {'ucid': pcoop.Coop.Create(heroObject.inserted_id).inserted_id}})
-		resp.data = msgpack.packb({"Info": "Successfully created a new hero with id: {}".format(heroObject.inserted_id)})
+		resp.data = msgpack.packb({"uhid": "{}".format(heroObject.inserted_id)})
 		resp.status = falcon.HTTP_201
 
 	#Do we want to do anything with this?
@@ -138,7 +139,7 @@ class HeroName(object):
 			resp.data = msgpack.packb({"heroname": hName})
 			resp.status = falcon.HTTP_200
 
-class HeroEmail(object):
+class Email(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
 		self.db = MongoClient().greatLibrary
