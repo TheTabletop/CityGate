@@ -30,8 +30,8 @@ class Coop(object):
         resp.data = msgpack.packb(json.dumps(coop))
         resp.status = falcon.HTTP_200
 
-	def increase_count(self, ucid):
-		self.coops.update_one({'_id': ObjectId(ucid)}, {"$inc": {"unseen_count": 1}})
+    def increase_count(self, ucid):
+    	self.coops.update_one({'_id': ObjectId(ucid)}, {"$inc": {"unseen_count": 1}})
 
 	def decrease_count(self, ucid):
 		self.coops.update_one({'_id': ObjectId(ucid)}, {"$inc": {"unseen_count": -1}})
