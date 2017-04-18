@@ -41,7 +41,7 @@ class FormGuild(object):
 				"invited_heros": []
 			})
 
-		resp.data = msgpack.packb({"Info": "Successfully created a new hero with id: {}".format(result)})
+		resp.data = msgpack.packb({"Info": "Successfully created a new guild with id: {}".format(result)})
 		resp.status = falcon.HTTP_201
 
 	#Do we want to do anything with this?

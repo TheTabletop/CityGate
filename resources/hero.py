@@ -38,7 +38,7 @@ class NewHero(object):
 				"playername": params.get('playername'),
 				"heroname" : params.get('heroname'),
 				"games": params.get('games'),
-				"backstory": params.get('backstory')
+				"backstory": params.get('backstory'),
 				"key": hashlib.sha224(params.get('key').encode('utf-8')).hexdigest(),
 				"companions": [],
 				"guild_invites": [],
