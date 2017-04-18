@@ -6,6 +6,9 @@ If you think a route should be accepting/returning different things or if routes
 ## Table Of Contents
 * [Login Route](#login-route)
 	* [Login](#login)
+* [Search Routes](#search-routes)
+	* [AllGuilds](#allguilds)
+	* [Allheros](#allheros)
 * [Hero Routes](#hero-routes)
 	* [NewHero](#newhero)
 	* [Hero](#hero)
@@ -64,6 +67,72 @@ www.todo.com/login
 	"session_hash": "<random alhpa numeric string>",
 	"uhid": "<unique_hero_id>"
 }
+```
+# Search Routes
+## AllGuilds
+www.todo.com/search/allguilds
+### on_get
+* **Send session with requests:** No
+* __Returns 200 on success__
+
+**Returns a json with the response**
+```python
+[
+	{
+		'_id': "<ugid>",
+		'games': ["list", "of", "games"],
+		'name': "<guild name>",
+		'charter': "<charter>",
+		'members': ["list", "of", "members"],
+		'last_session': {"ts": "<timestamp", "game": "<game>"}
+	},
+	{
+		'_id': "<ugid>",
+		'games': ["list", "of", "games"],
+		'name': "<guild name>",
+		'charter': "<charter>",
+		'members': ["list", "of", "members"],
+		'last_session': {"ts": "<timestamp", "game": "<game>"}
+	},
+	{
+		'_id': "<ugid>",
+		'games': ["list", "of", "games"],
+		'name': "<guild name>",
+		'charter': "<charter>",
+		'members': ["list", "of", "members"],
+		'last_session': {"ts": "<timestamp", "game": "<game>"}
+	}, #...
+]
+```
+## AllHeros
+www.todo.com/search/allheros
+### on_get
+* **Send session with requests:** No
+* __Returns 200 on success__
+
+**Returns a json with the response**
+```python
+[
+	{
+		'_id': "<uhid>",
+		'games': ["list", "of", "games"],
+		'heroname': "<hero name>",
+		'backstory': "<back story>"
+	},
+	{
+		'_id': "<uhid>",
+		'games': ["list", "of", "games"],
+		'heroname': "<hero name>",
+		'backstory': "<back story>"
+	},
+	{
+		'_id': "<uhid>",
+		'games': ["list", "of", "games"],
+		'heroname': "<hero name>",
+		'backstory': "<back story>"
+	}, #...
+]
+
 ```
 # Hero Routes
 ## NewHero
