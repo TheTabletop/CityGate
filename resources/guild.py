@@ -374,3 +374,25 @@ class LeaveGuild(object):
 			resp.status = falcon.HTTP_726
 		else:
 			resp.status = falcon.HTTP_400
+
+class Requests(object):
+	def __init__(self, db_reference):
+		self.db = db_reference
+		self.db = MongoClient().greatLibrary
+		self.guilds = self.db.guilds
+
+	def on_get(self, req, resp, ugid):
+		result = self.guilds.find_one({'_id': ObjectId(ugid)}, projection=["hero_requests"])
+		resp.data = msgpack.packb(json.dumps({"hero_requests": result.get("hero_requests")}))
+		resp.status = falcon.HTTP_200
+
+class Invites(object):
+	def __init__(self, db_reference):
+		self.db = db_reference
+		self.db = MongoClient().greatLibrary
+		self.guilds = self.db.guilds
+
+	def on_get(self, req, resp, ugid):
+		result = self.guilds.find_one({'_id': ObjectId(ugid)}, projection=["invited_heros"])
+		resp.data = msgpack.packb(json.dumps({"invited_heros": result.get("invited_heros")}))
+		resp.status = falcon.HTTP_200

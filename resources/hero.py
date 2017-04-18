@@ -275,3 +275,25 @@ class CommissionKey(object):
 	def on_get(self, req, resp):
 		resp.data = msgpack.packb({"Message": "This is not a route that is allowed"})
 		resp.status = falcon.HTTP_405
+
+class Requests(object):
+	def __init__(self, db_reference):
+		self.db = db_reference
+		self.db = MongoClient().greatLibrary
+		self.heros = self.db.heros
+
+	def on_get(self, req, resp, uhid):
+		result = self.heros.find_one({'_id': ObjectId(uhid)}, projection=["requested_guilds"])
+		resp.data = msgpack.packb(json.dumps({"requested_guilds": resp.get('requested_guilds')}))
+		resp.status = falcon.HTTP_200
+
+class Invites(object):
+	def __init__(self, db_reference):
+		self.db = db_reference
+		self.db = MongoClient().greatLibrary
+		self.heros = self.db.heros
+
+	def on_get(self, req, resp, uhid):
+		result = self.heros.find_one({'_id': ObjectId(uhid)}, projection=["guild_invites"])
+		resp.data = msgpack.packb(json.dumps({"guild_invites": resp.get('guild_invites')}))
+		resp.status = falcon.HTTP_200
