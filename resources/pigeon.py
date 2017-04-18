@@ -64,7 +64,7 @@ class Pigeon(object):
         resp.status = falcon.HTTP_202
 
 
-def Messages(object):
+class Messages(object):
     def __init__(self, db_reference):
         self.db = db_reference
         self.db = MongoClient().greatLibrary

@@ -11,7 +11,7 @@ git pull origin iteration2
 
 If you don't have conda, do the following to download and build miniconda.
 ```bash
-wget http://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O ~/minconda.#!/bin/sh
+wget http://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O ~/miniconda.sh
 bash ~/miniconda.sh -b -p $HOME/miniconda
 export PATH="$HOME/miniconda/bin:$PATH"
 ```

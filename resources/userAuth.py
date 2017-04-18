@@ -10,7 +10,7 @@ import falcon
 import json
 import msgpack
 
-class OnLogin(object):
+class Login(object):
 
     def __init__(self, db_reference):
         self.db = db_reference
