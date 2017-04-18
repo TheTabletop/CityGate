@@ -698,7 +698,7 @@ Uhid associated with session token must be the uhid in the url.
 }
 ```
 
-* Decision = True --> add ugid to members list of guild and remove from hero's invites list
+* Decision = True --> add uhid to members list of guild specified by ugid and remove ugid from hero's invites list
 * Decision = False --> remove ugid from hero's invites list
 
 ## LeaveGuild
@@ -706,6 +706,8 @@ www.todo.com/guild/{ugid}/leave/{uhid}
 ### on_post
 * **Send session token with requests:** Yes
 * __returns 202 on success__
+
+Uhid must be the uhid assoicated with the session token. Although it hasn't been implemented yet, if you are the only admin, you will not be able to leave until you assign a new admin (unless you are the only member, in that case you leaving also destroys the guild)
 
 # Pigeon Coop Routes
 **NOTE**: The ucid (unique coop id) is the same as the associated hero's uhid (unique hero id). Thus if you know the hero's uhid, you automatically have what you need get that hero's pigeon coop (inbox).
