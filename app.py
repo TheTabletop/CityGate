@@ -19,9 +19,9 @@ DB_PATH = ""
 
 #Health check
 class CheckCabbage(object):
-    def on_get(self, req, resp):
-        resp.status = falcon.HTTP_200
-        resp.data = msgpack.packb({"Msg": "We've got cabbages my liege!"})
+	def on_get(self, req, resp):
+		resp.status = falcon.HTTP_200
+		resp.data = msgpack.packb({"Msg": "We've got cabbages my liege!"})
 
 ### HEALTH CHECK
 api.add_route('/checkCabbage', CheckCabbage())
