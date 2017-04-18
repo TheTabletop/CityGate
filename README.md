@@ -1,5 +1,5 @@
 # CityGate
-First off if you are using this on windows, stop it. Just stop it. This setup assumes a linux system (and preferably debian based).
+First off if you are using this on windows, stop it. Just stop it. This setup assumes a linux system (and preferably debian based). If don't have a linux system, and don't want to dual boot. Install [virtual box](https://www.virtualbox.org/wiki/Downloads), and then create a virtual machine with it with a [mint iso](https://www.linuxmint.com/download.php).
 
 First off clone the repository and get the correct branch, you are going to want iteration2.
 ```bash
@@ -26,7 +26,6 @@ now let's activate the environment and install a few other dependencies.
 source activate rfg-api
 conda install pip
 pip install falcon
-pip install unittest
 pip install bson
 pip install ipython
 pip install pymongo
@@ -34,6 +33,6 @@ pip install gunicorn
 pip install httpie
 pip install msgpack-python
 ```
-You also need to make sure you have a running instance of mongodb, to get this set up, please follow the directions here https://docs.mongodb.com/manual/administration/install-on-linux/.
+You also need to make sure you have a running instance of mongodb, to get this set up, please follow the directions [here](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-debian/).
 
-Now with all of this you will need two terminal windows open with the env activated (`source activate rfg-api`), one to start the app, `gunicorn app` and the other to run the tests `python -m unittest`
+Now with all of this you will need two terminal windows open with the env activated (`source activate rfg-api`), one to start the app, `gunicorn app` and the other to run the tests `python -m unittest` or do manual curl/wget/httpie requests.
