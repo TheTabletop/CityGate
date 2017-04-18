@@ -33,6 +33,6 @@ pip install gunicorn
 pip install httpie
 pip install msgpack-python
 ```
-You also need to make sure you have a running instance of mongodb, to get this set up, please follow the directions [here](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-debian/).
+You also need to make sure you have a running instance of mongodb, to get this set up, please follow the directions [here](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/).
 
 Now with all of this you will need two terminal windows open with the env activated (`source activate rfg-api`), one to start the app, `gunicorn app` and the other to run the tests `python -m unittest` or do manual curl/wget/httpie requests.
