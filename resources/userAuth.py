@@ -10,7 +10,7 @@ import falcon
 import json
 import msgpack
 
-class OnLogin(object):
+class Login(object):
 
     def __init__(self, db_reference):
         self.db = db_reference
@@ -27,7 +27,7 @@ class OnLogin(object):
         resp.data=msgpack.packb(json.dumps({'sessionID': result.inserted_id}))
         resp.status = falcon.HTTP_201
 
-    def on_get(self, req, resp, something_else):
+    def on_get(self, req, resp):
         resp.status = falcon.HTTP_404
 
 class updateExpire(object):
@@ -54,7 +54,7 @@ class checkuhid(object):
     def checkid(self, currUserID, sessionID):
         result = self.userAuth.find_one({'_id': ObjectId(sessionID)},projection=['uhid'])
         return currUserID==result.get('uhid')
-
+        
 class Tokens(object):
     def __init__(self, db_reference):
         self.db = db_reference
