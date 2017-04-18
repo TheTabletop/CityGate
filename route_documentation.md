@@ -16,6 +16,8 @@ If you think a route should be accepting/returning different things or if routes
   * [Key](#key)
   * [ForgeKey](#forgekey)
   * [CommissionKey](#commissionkey)
+  * [Invites](#invites)
+  * [Requests](#requests)
 * [Guild Routes](#guild-routes)
   * [FormGuild](#formguild)
   * [Guild](#guild)
@@ -30,6 +32,8 @@ If you think a route should be accepting/returning different things or if routes
   * [InviteHeroToJoin](#inviteherotojoin)
   * [RespondToGuildInvite](#respondtoguildinvite)
   * [LeaveGuild](#leaveguild)
+  * [Invites](#invites)
+  * [Requests](#requests)
 * [Pigeon Coop Routes](#pigeon-coop-routes)
   * [Coop](#coop)
   * [Pigeons](#pigeons)
@@ -316,6 +320,34 @@ Used for commissioning a new key for a hero (when a person forgets their passwor
   "email": "<assumed account email>"
 }
 ```
+## Invites
+www.todo.com/hero/{uhid}/invites
+### on_get
+* **Send session token with requests:** Yes
+* __returns 200 on success__
+
+Uhid associated with session token must be same as uhid in url.
+
+**Returns a json with the response**
+```python
+{
+  "guild_invites": ["guilds", "that", "invited", "hero"]
+}
+```
+## Requests
+www.todo.com/guild/{ugid}/requests
+### on_get
+* **Send session token with requests:** Yes
+* __returns 200 on success__
+
+Uhid associated with session token must be same as uhid in url.
+
+**Returns a json with the response**
+```python
+{
+  "requested_guilds": ["guilds", "hero", "requested", "to", "join"]
+}
+```
 # Guild Routes
 ## FormGuild
 www.todo.com/guild/formguild
@@ -425,8 +457,6 @@ www.todo.com/guild/{ugid}/name
   "guildname": "<guildname>"
 }
 ```
-
-
 ### on_post
 * **Send session token with requests:** Yes
 * __returns 202 on success__
@@ -439,7 +469,6 @@ Uhid associated with session token must be an admin of the guild.
   "guildname": "<new guild name>"
 }
 ```
-
 **Returns a json with the response**
 ```python
 {
@@ -447,7 +476,6 @@ Uhid associated with session token must be an admin of the guild.
   "guildname": "<updated guildname>"
 }
 ```
-
 ## Charter
 www.todo.com/guild/{ugid}/charter
 ### on_get
@@ -474,7 +502,6 @@ Uhid associated with session token must be an admin of the guild.
   "charter": "<new charter>"
 }
 ```
-
 **Returns a json with the response**
 ```python
 {
@@ -482,7 +509,6 @@ Uhid associated with session token must be an admin of the guild.
   "guildname": "<updated charter>"
 }
 ```
-
 ## Session
 www.todo.com/guild/{ugid}/session
 
@@ -502,7 +528,6 @@ www.todo.com/guild/{ugid}/session
   }
 }
 ```
-
 ### on_post
 * **Send session token with requests:** Yes
 * __returns 202 on success__
@@ -519,7 +544,6 @@ Uhid associated with session token must be an admin of the guild.
   }
 }
 ```
-
 **Returns a json with the response**
 ```python
 {
@@ -531,7 +555,6 @@ Uhid associated with session token must be an admin of the guild.
   }
 }
 ```
-
 ## Location
 www.todo.com/guild/{ugid}/location
 ### on_get
@@ -545,7 +568,6 @@ www.todo.com/guild/{ugid}/location
   "location": "<location>"
 }
 ```
-
 ### on_post
 * **Send session token with requests:** Yes
 * __returns 202 on success__
@@ -566,7 +588,6 @@ Uhid associated with session token must be an admin of the guild.
   "location": "<updated location>"
 }
 ```
-
 ## Games
 www.todo.com/guild/{ugid}/games
 ### on_get
@@ -579,7 +600,6 @@ www.todo.com/guild/{ugid}/games
   "games": ["list", "of", "games", "guild", "plays"]
 }
 ```
-
 ### on_post
 * **Send session token with requests:** Yes
 * __returns 202 on success__
@@ -601,7 +621,6 @@ Uhid associated with session token must be an admin of the guild.
   "games": ["updated", "list", "of", "games"]
 }
 ```
-
 ## Members
 www.todo.com/guild/{ugid}/members
 ### on_get
@@ -615,7 +634,6 @@ www.todo.com/guild/{ugid}/members
   "members": ["list", "of", "guild", "members"]
 }
 ```
-
 ### on_delete
 * **Send session token with requests:** Yes
 * __returns 202 on success__
@@ -636,7 +654,6 @@ Uhid associated with session token must be an admin
   "members": ["updated", "list", "of", "members"]
 }
 ```
-
 ## RequestToJoinGuild
 www.todo.com/guild/{ugid}/request/{uhid}
 ### on_post
@@ -709,6 +726,34 @@ www.todo.com/guild/{ugid}/leave/{uhid}
 
 Uhid must be the uhid assoicated with the session token. Although it hasn't been implemented yet, if you are the only admin, you will not be able to leave until you assign a new admin (unless you are the only member, in that case you leaving also destroys the guild)
 
+## Invites
+www.todo.com/guild/{ugid}/invites
+### on_get
+* **Send session token with requests:** Yes
+* __returns 200 on success__
+
+Uhid associated with session token must be an admin of guild associated with ugid.
+
+**Returns a json with the response**
+```python
+{
+  "invited_heros": ["heros", "invited", "to", "join", "guild"]
+}
+```
+## Requests
+www.todo.com/guild/{ugid}/requests
+### on_get
+* **Send session token with requests:** Yes
+* __returns 200 on success__
+
+Uhid associated with session token must be an admin of guild associated with ugid.
+
+**Returns a json with the response**
+```python
+{
+  "hero_requests": ["heros", "that", "requested", "to", "join"]
+}
+```
 # Pigeon Coop Routes
 **NOTE**: The ucid (unique coop id) is the same as the associated hero's uhid (unique hero id). Thus if you know the hero's uhid, you automatically have what you need get that hero's pigeon coop (inbox).
 ## Coop
