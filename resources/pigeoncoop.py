@@ -67,7 +67,6 @@ class UnseenCount(object):
 		self.db = db_reference
 		self.db = MongoClient().greatLibrary
 		self.coops = self.db.pigeoncoops
-		this = red
 
 	def on_get(self, req, resp, ucid):
 		result = self.coops.find_one({'_id': ObjectId(ucid)}, projection=['unseen_count'])

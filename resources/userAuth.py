@@ -16,10 +16,11 @@ class Login(object):
 		self.db = db_reference
 		self.db = MongoClient().greatLibrary
 		self.userAuth = self.db.userAuth
-		self.userAuth.create_index({"expires": 1}, {'expireAfterSeconds': 0})
+		#ignore create index issue for now as we will be switching to redis
+		#self.userAuth.create_index({"expires": 1}, {'expireAfterSeconds': 0})
 
 	def on_post(self, req, resp):
-		result = self.userAuth.insertone(
+		result = self.userAuth.insert_one(
 			{
 				"uhid": req.get_param('uhid'),
 				"expires": datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
@@ -38,7 +39,7 @@ class updateExpire(object):
 		self.userAuth = self.db.userAuth
 
 	def incrementExpire(self):
-		self.userAuth.updateon(
+		self.userAuth.update_one(
 			{
 				"expires": datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
 			}
