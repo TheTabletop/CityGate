@@ -54,7 +54,7 @@ class checkuhid(object):
 	def checkid(self, currUserID, sessionID):
 		result = self.userAuth.find_one({'_id': ObjectId(sessionID)},projection=['uhid'])
 		return currUserID==result.get('uhid')
-		
+
 class Tokens(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
@@ -62,7 +62,7 @@ class Tokens(object):
 		self.userAuth = self.db.userAuth
 
 	def TokenExists(self, req, resp):
-		token = req.parmas_get('session_token'):
+		token = req.parmas_get('session_token')
 		result = self.userAuth.find_one({'_id': ObjectId(token)})
 		if result is None:
 			msg = 'Invalid session token!'
