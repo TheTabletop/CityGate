@@ -1,6 +1,8 @@
 import os
 import uuid
 import mimetypes
+import redis
+
 
 from pymongo import MongoClient
 from bson import ObjectId
@@ -25,10 +27,11 @@ import resources.pigeoncoop as pcoop
 
 class NewHero(object):
 
-	def __init__(self, db_reference):
+	def __init__(self, db_reference, redis_reference):
 		self.db = db_reference
 		self.db = MongoClient().greatLibrary
 		self.heros = self.db.heros
+		self.redis = redis_reference #TODO: Correct redis db reference
 
 	def on_post(self, req, resp):
 		params = json.loads(req.stream.read().decode("utf-8") )
@@ -55,10 +58,11 @@ class NewHero(object):
 
 class Hero(object):
 
-	def __init__(self, db_reference):
+	def __init__(self, db_reference, redis_reference):
 		self.db = db_reference
 		self.db = MongoClient().greatLibrary
 		self.heros = self.db.heros
+		self.redis = redis_reference #TODO: Correct redis db reference
 
 	# For updating a hero's Info
 	# Can only edit hero info for hero id of session token
