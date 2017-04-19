@@ -119,8 +119,7 @@ class ChangeEmail(unittest.TestCase):
 		}
 		r = requests.post('http://localhost:8000/hero/{uuid}/email', data=json.dumps(payload))  # TODO: Set UUID
 		self.assertEqual(r.status_code, 201)
-		self.assertNotEqual(None, (self.db.heros.find_one({'email': 'barfoo@rollforguild.com'}))[
-			"playername"])  # TODO: Test correct DB reference
+		self.assertNotEqual(None, (self.db.heros.find_one({'email': 'barfoo@rollforguild.com'})).get("playername")) # TODO: Test correct DB reference
 
 class ChangeKey(unittest.TestCase):
 	def setUp(self):
@@ -146,8 +145,8 @@ class ChangeKey(unittest.TestCase):
 		}
 		r = requests.post('http://localhost:8000/hero/{uuid}/key', data=json.dumps(payload))  # TODO: Set UUID
 		self.assertEqual(r.status_code, 201)
-		self.assertEqual("goodpassword", (self.db.heros.find_one({'email': 'barfoo@rollforguild.com'}))[
-			"key"])  # TODO: Test correct DB reference
+		self.assertEqual("goodpassword", (self.db.heros.find_one({'email': 'barfoo@rollforguild.com'})).get(
+			"key"))  # TODO: Test correct DB reference
 
 class LoginHero(unittest.TestCase):
 	def setUp(self):
@@ -258,7 +257,7 @@ class ChangeGuildGames(unittest.TestCase):
 		}
 		r = requests.post('http://localhost:8000/guild/{ugid}/games', data=json.dumps(payload))  # TODO: Set UGID
 		self.assertEqual(r.status_code, 201)
-		self.assertEqual(['Pathfinder'], (self.db.guild.find_one({'Foos Guild'}))["games"]) # TODO: Test correct DB reference
+		self.assertEqual(['Pathfinder'], (self.db.guild.find_one({'Foos Guild'})).get("games")) # TODO: Test correct DB reference
 
 class ChangeGuildCharter(unittest.TestCase):
 	def setUp(self):
@@ -288,7 +287,7 @@ class ChangeGuildCharter(unittest.TestCase):
 		}
 		r = requests.post('http://localhost:8000/guild/{ugid}/charter', data=json.dumps(payload))  # TODO: Set UGID
 		self.assertEqual(r.status_code, 201)
-		self.assertEqual('The NEW Charter', (self.db.guild.find_one({'Foos Guild'}))["charter"])  # TODO: Test correct DB reference
+		self.assertEqual('The NEW Charter', (self.db.guild.find_one({'Foos Guild'})).get("charter"))  # TODO: Test correct DB reference
 
 class ChangeGuildLocation(unittest.TestCase):
 	def setUp(self):
@@ -318,7 +317,7 @@ class ChangeGuildLocation(unittest.TestCase):
 		}
 		r = requests.post('http://localhost:8000/guild/{ugid}/location', data=json.dumps(payload))  # TODO: Set UGID
 		self.assertEqual(r.status_code, 201)
-		self.assertEqual('Middleton', (self.db.guild.find_one({'Foos Guild'}))["location"])  # TODO: Test correct DB reference
+		self.assertEqual('Middleton', (self.db.guild.find_one({'Foos Guild'})).get("location"))  # TODO: Test correct DB reference
 
 class ChangeGuildMembers(unittest.TestCase):
 	def setUp(self):
@@ -348,7 +347,7 @@ class ChangeGuildMembers(unittest.TestCase):
 		}
 		r = requests.post('http://localhost:8000/guild/{ugid}/members', data=json.dumps(payload))  # TODO: Set UGID
 		self.assertEqual(r.status_code, 201)
-		self.assertEqual(['foobar@rollforguild.com', ' barfoo@rollforguild.com'], (self.db.guild.find_one({'Foos Guild'}))["members"])  # TODO: Test correct DB reference
+		self.assertEqual(['foobar@rollforguild.com', ' barfoo@rollforguild.com'], (self.db.guild.find_one({'Foos Guild'})).get("members"))  # TODO: Test correct DB reference
 
 ##TODO: Member requests, Invites, etc
 
