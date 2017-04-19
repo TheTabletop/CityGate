@@ -18,7 +18,7 @@ class NewPigeon(object):
 		self.db = MongoClient().greatLibrary
 		self.pigeons = self.db.pigeons
 
-	def on_post(self, req, resp, uhid):
+	def on_post(self, req, resp, ucid):
 		params = json.loads(req.stream.read().decode("utf-8"))
 		participants = params.get("send_to")
 		toUpdate = participants

@@ -831,23 +831,80 @@ www.todo.com/coop/{ucid}
 * **Send session token with requests:** Yes
 * __returns 200 on success__
 
+Uhid associated with the session token must match the ucid (ucid is the same as the uhid)
+
+**Returns a json with the response**
+```python
+{
+	"_id": "<ucid>"
+	"pigeons": [
+		{
+			"upid": "<upid>",
+			"last_update": "<ts>",
+			"seen": True/False,
+			"heros": ["List", "of", "people"]
+		},
+		{
+			"upid": "<upid>",
+			"last_update": "<ts>",
+			"seen": True/False,
+			"heros": ["List", "of", "people"]
+		}
+	],
+	"unseen_count": <integer>
+}
+```
 ## Pigeons
 www.todo.com/coop/{ucid}/pigeons
 ### on_get
 * **Send session token with requests:** Yes
 * __returns 200 on success__
 
+Uhid associated with the session token must match the ucid (ucid is the same as the uhid)
+
+**Returns a json with the response**
+```python
+[
+	{
+		"upid": "<upid>",
+		"last_update": "<ts>",
+		"seen": True/False,
+		"heros": ["List", "of", "people"]
+	},
+	{
+		"upid": "<upid>",
+		"last_update": "<ts>",
+		"seen": True/False,
+		"heros": ["List", "of", "people"]
+	}
+]
+```
 ## Owner
 www.todo.com/coop/{ucid}/owner (**note**: somewhat useless considering the ucid is the uhid and you can only access the coop if you own it...)
 ### on_get
 * **Send session token with requests:** Yes
 * __returns 200 on success__
 
+Uhid associated with the session token must match the ucid (ucid is the same as the uhid)
+
+```python
+{
+	"uhid": "<uhid>"
+}
+```
 ## UnseenCount
 www.todo.com/coop/{ucid}/unseencount
 ### on_get
 * **Send session token with requests:** Yes
 * __returns 202 on success__
+
+Uhid associated with the session token must match the ucid (ucid is the same as the uhid)
+
+```python
+{
+	"unseen_count": <integer>
+}
+```
 
 # Pigeon Routes
 ## NewPigeon
@@ -855,6 +912,16 @@ www.todo.com/coop/{ucid}/pigeon/newpigeon
 ### on_post
 * **Send session token with requests:** Yes
 * __returns 202 on success__
+
+Uhid associated with the session token must match the ucid (ucid is the same as the uhid)
+
+**Expects a json with request**
+```python
+{
+	"send_to": ['uhid', 'uhid', 'uhid']
+	"message": "A bit of text"
+}
+```
 
 ## Pigeon
 www.todo.com/coop/{ucid}/pigeon/{upid}
