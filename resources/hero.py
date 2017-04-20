@@ -38,6 +38,7 @@ class NewHero(object):
 				"playername": params.get('playername'),
 				"heroname" : params.get('heroname'),
 				"games": params.get('games'),
+				"backstory": params.get('backstory'),
 				"key": hashlib.sha224(params.get('key').encode('utf-8')).hexdigest(),
 				"companions": [],
 				"guild_invites": [],
@@ -45,7 +46,7 @@ class NewHero(object):
 				"ucid": None
 			})
 		self.heros.update_one({'_id': heroObject}, {'$set': {'ucid': pcoop.Coop.Create(heroObject.inserted_id).inserted_id}})
-		resp.data = msgpack.packb({"Info": "Successfully created a new hero with id: {}".format(heroObject.inserted_id)})
+		resp.data = msgpack.packb({"uhid": "{}".format(heroObject.inserted_id)})
 		resp.status = falcon.HTTP_201
 
 	#Do we want to do anything with this?
@@ -138,7 +139,7 @@ class HeroName(object):
 			resp.data = msgpack.packb({"heroname": hName})
 			resp.status = falcon.HTTP_200
 
-class HeroEmail(object):
+class Email(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
 		self.db = MongoClient().greatLibrary
@@ -202,7 +203,7 @@ class Key(object):
 
 	def on_post(self, req, resp, uhid):
 		result = self.heros.find_one({"_id": ObjectId(uhid)}, projection=['key'])
-		if result[key] == hashlib.sha224(req.get_param('oldkey')).hexdigest():
+		if result.get("key") == hashlib.sha224(req.get_param('oldkey')).hexdigest():
 			result = self.heros.update_one({'_id': ObjectId(uhid)}, {'$inc': {'key': hashlib.sha224(req.get_param('newkey').hexdigest())}})
 			if result.modified_count == 1:
 				resp.data = msgpack.packb({"Success": "Successfully added companion"})
@@ -274,3 +275,25 @@ class CommissionKey(object):
 	def on_get(self, req, resp):
 		resp.data = msgpack.packb({"Message": "This is not a route that is allowed"})
 		resp.status = falcon.HTTP_405
+
+class Requests(object):
+	def __init__(self, db_reference):
+		self.db = db_reference
+		self.db = MongoClient().greatLibrary
+		self.heros = self.db.heros
+
+	def on_get(self, req, resp, uhid):
+		result = self.heros.find_one({'_id': ObjectId(uhid)}, projection=["requested_guilds"])
+		resp.data = msgpack.packb(json.dumps({"requested_guilds": resp.get('requested_guilds')}))
+		resp.status = falcon.HTTP_200
+
+class Invites(object):
+	def __init__(self, db_reference):
+		self.db = db_reference
+		self.db = MongoClient().greatLibrary
+		self.heros = self.db.heros
+
+	def on_get(self, req, resp, uhid):
+		result = self.heros.find_one({'_id': ObjectId(uhid)}, projection=["guild_invites"])
+		resp.data = msgpack.packb(json.dumps({"guild_invites": resp.get('guild_invites')}))
+		resp.status = falcon.HTTP_200
