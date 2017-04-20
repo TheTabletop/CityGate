@@ -18,7 +18,7 @@ class NewPigeon(object):
 		self.db = MongoClient().greatLibrary
 		self.pigeons = self.db.pigeons
 
-	def on_post(self, req, resp, uhid):
+	def on_post(self, req, resp, ucid):
 		params = json.loads(req.stream.read().decode("utf-8"))
 		participants = params.get("send_to")
 		toUpdate = participants
@@ -29,7 +29,7 @@ class NewPigeon(object):
 				{
 						"participants": participants,
 						"has_not_read": toUpdate,
-						"messages": [{"message": params.get("message"), "sender": ucid, "last_update": datatime.datetime.utcnow()}]
+						"messages": [{"message": params.get("message"), "sender": ucid, "ts": datatime.datetime.utcnow()}]
 				})
 
 			if createResult is not None:
