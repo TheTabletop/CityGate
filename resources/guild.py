@@ -257,15 +257,15 @@ class RespondToHeroRequest(object):
 
 	def on_post(self, resp, req, ugid, uhid):
 		dec = req.params_get('decision')
-		if not (decision == 'Accept' or decision == 'Decline'):
+		if not (dec == True  or dec == False):
 			resp.data = msgpack.packb({"Error": "Must provide decision param as either 'Accept' or 'Decline'"})
 			resp.status = falcon.HTTP_400
 		else:
-			if decision == "Decline":
+			if dec == False:
 				self.guilds.update_one({'_id': ObjectId(ugid)}, {'$pull': {'invited_heros': ObjectId(uhid)}})
 				self.heros.update_one({'_id': ObjectId(uhid)}, {'$pull': {'guild_invites': ObjectId(ugid)}})
 				resp.data = msgpack.packb({"Success": "Acknowledged decline of invite"})
-			elif decision == 'Accept':
+			elif dec == True:
 				self.guilds.update_one({'_id': ObjectId(ugid)}, {'$pull': {'invited_heros': ObjectId(uhid)}, '$push': {'membsers': ObjectId(uhid)}})
 				self.heros.update_one({'_id': ObjectId(uhid)}, {'$pull': {'guild_invites': ObjectId(ugid)}, '$push': {'guilds': ObjectId(ugid)}})
 				resp.data = msgpack.packb({"Success": "Acknowledged acceptance of inivte"})
@@ -301,15 +301,15 @@ class RespondToGuildInvite(object):
 
 	def on_post(self, resp, req, ugid, uhid):
 		dec = req.params_get('decision')
-		if not (decision == 'Accept' or decision == 'Decline'):
+		if not (dec == True or dec == False):
 			resp.data = msgpack.packb({"Error": "Must provide decision param as either 'Accept' or 'Decline'"})
 			resp.status = falcon.HTTP_400
 		else:
-			if decision == "Decline":
+			if dec == False:
 				self.guilds.update_one({'_id': ObjectId(ugid)}, {'$pull': {'invited_heros': ObjectId(uhid)}})
 				self.heros.update_one({'_id': ObjectId(uhid)}, {'$pull': {'guild_invites': ObjectId(ugid)}})
 				resp.data = msgpack.packb({"Success": "Acknowledged decline of invite"})
-			elif decision == 'Accept':
+			elif dec == True:
 				self.guilds.update_one({'_id': ObjectId(ugid)}, {'$pull': {'invited_heros': ObjectId(uhid)}, '$push': {'membsers': ObjectId(uhid)}})
 				self.heros.update_one({'_id': ObjectId(uhid)}, {'$pull': {'guild_invites': ObjectId(ugid)}, '$push': {'guilds': ObjectId(ugid)}})
 				resp.data = msgpack.packb({"Success": "Acknowledged acceptance of inivte"})

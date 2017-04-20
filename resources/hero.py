@@ -203,7 +203,7 @@ class Key(object):
 
 	def on_post(self, req, resp, uhid):
 		result = self.heros.find_one({"_id": ObjectId(uhid)}, projection=['key'])
-		if result[key] == hashlib.sha224(req.get_param('oldkey')).hexdigest():
+		if result.get("key") == hashlib.sha224(req.get_param('oldkey')).hexdigest():
 			result = self.heros.update_one({'_id': ObjectId(uhid)}, {'$inc': {'key': hashlib.sha224(req.get_param('newkey').hexdigest())}})
 			if result.modified_count == 1:
 				resp.data = msgpack.packb({"Success": "Successfully added companion"})
