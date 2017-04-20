@@ -29,7 +29,7 @@ class NewPigeon(object):
 				{
 						"participants": participants,
 						"has_not_read": toUpdate,
-						"messages": [{"message": params.get("message"), "sender": ucid, "last_update": datatime.datetime.utcnow()}]
+						"messages": [{"message": params.get("message"), "sender": ucid, "ts": datatime.datetime.utcnow()}]
 				})
 
 			if createResult is not None:
