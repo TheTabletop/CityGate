@@ -1,4 +1,5 @@
 import falcon
+import falcon_jsonify
 import msgpack
 import resources.hero as hero
 import resources.guild as guild
@@ -7,9 +8,11 @@ import resources.pigeoncoop as pcoop
 import resources.pigeon as pigeon
 import resources.userAuth as auth
 
-api = application = falcon.API()
+from pymongo import MongoClient
 
-DB_PATH = ""
+api = application = falcon.API(middleware=[falcon_jsonify.Middleware(help_messages=True)])
+
+DB_REF = MongoClient().greatLibrary
 
 #image_collection = images.Collection(storage_path)
 #image = images.Item(storage_path)
@@ -27,43 +30,46 @@ class CheckCabbage(object):
 api.add_route('/checkCabbage', CheckCabbage())
 
 ### Login
-api.add_route('/login', auth.Login("TODO"))
+api.add_route('/login', auth.Login(DB_REF))
 
 ### HERO RELATED ROUTES
-api.add_route('/hero/{uhid}', hero.Hero("TODO"))
-api.add_route('/hero/create', hero.NewHero("TODO"))
-api.add_route('/hero/{uhid}/playername', hero.PlayerName("TODO"))
-api.add_route('/hero/{uhid}/heroname', hero.HeroName("TODO"))
-api.add_route('/hero/{uhid}/email', hero.Email("TODO"))
-api.add_route('/hero/{uhid}/companions', hero.Companions("TODO"))
-api.add_route('/hero/{uhid}/key', hero.Key("TODO"))
-api.add_route('/hero/forgekey/{uiid}', hero.ForgeKey("TODO"))
-api.add_route('/hero/commissionkey', hero.CommissionKey("TODO"))
+api.add_route('/hero/{uhid}', hero.Hero(DB_REF))
+api.add_route('/hero/create', hero.NewHero(DB_REF))
+api.add_route('/hero/{uhid}/playername', hero.PlayerName(DB_REF))
+api.add_route('/hero/{uhid}/heroname', hero.HeroName(DB_REF))
+api.add_route('/hero/{uhid}/email', hero.Email(DB_REF))
+api.add_route('/hero/{uhid}/companions', hero.Companions(DB_REF))
+api.add_route('/hero/{uhid}/key', hero.Key(DB_REF))
+api.add_route('/hero/forgekey/{uiid}', hero.ForgeKey(DB_REF))
+api.add_route('/hero/commissionkey', hero.CommissionKey(DB_REF))
+api.add_route('/hero/{uhid}/companionrequests', hero.CompanionRequests(DB_REF))
+api.add_route('/hero/{uhid}/companionrequest', hero.CompanionRequest(DB_REF))
+api.add_route('/hero/{uhid}/companionrequestresponse', hero.CompanionRequestResponse(DB_REF))
 
 ### GUILD RELATED ROUTES
-api.add_route('/guild/{ugid}', guild.Guild("TODO"))
-api.add_route('/guild/form', guild.FormGuild("TODO"))
-api.add_route('/guild/{ugid}/guildname', guild.Name("TODO"))
-api.add_route('/guild/{ugid}/games', guild.Games("TODO"))
-api.add_route('/guild/{ugid}/charter', guild.Charter("TODO"))
-api.add_route('/guild/{ugid}/members', guild.Members("TODO"))
-api.add_route('/guild/{ugid}/location', guild.Location("TODO"))
-api.add_route('/guild/{ugid}/leave/{uhid}', guild.LeaveGuild("TODO"))
-api.add_route('/guild/{ugid}/request/{uhid}', guild.RequestToJoinGuild("TODO"))
-api.add_route('/guild/{ugid}/requestresponse/{uhid}', guild.RespondToHeroRequest("TODO"))
-api.add_route('/guild/{ugid}/invite/{uhid}', guild.InviteHeroToJoin("TODO"))
-api.add_route('/guild/{ugid}/inviteresponse/{uhid}', guild.RespondToGuildInvite("TODO"))
+api.add_route('/guild/{ugid}', guild.Guild(DB_REF))
+api.add_route('/guild/form', guild.FormGuild(DB_REF))
+api.add_route('/guild/{ugid}/guildname', guild.Name(DB_REF))
+api.add_route('/guild/{ugid}/games', guild.Games(DB_REF))
+api.add_route('/guild/{ugid}/charter', guild.Charter(DB_REF))
+api.add_route('/guild/{ugid}/members', guild.Members(DB_REF))
+api.add_route('/guild/{ugid}/location', guild.Location(DB_REF))
+api.add_route('/guild/{ugid}/leave/{uhid}', guild.LeaveGuild(DB_REF))
+api.add_route('/guild/{ugid}/request/{uhid}', guild.RequestToJoinGuild(DB_REF))
+api.add_route('/guild/{ugid}/requestresponse/{uhid}', guild.RespondToHeroRequest(DB_REF))
+api.add_route('/guild/{ugid}/invite/{uhid}', guild.InviteHeroToJoin(DB_REF))
+api.add_route('/guild/{ugid}/inviteresponse/{uhid}', guild.RespondToGuildInvite(DB_REF))
 
 ### SEARCH RELATED ROUTES
-api.add_route('/search/guilds', search.AllGuilds("TODO"))
-api.add_route('/search/heros', search.AllHeros("TODO"))
+api.add_route('/search/guilds', search.AllGuilds(DB_REF))
+api.add_route('/search/heros', search.AllHeros(DB_REF))
 
 ### PIGEON COOP ROUTES
-api.add_route('/pigeoncoop/{ucid}', pcoop.Coop("TODO"))
-api.add_route('/pigeoncoop/{ucid}/owner', pcoop.Coop("TODO")) #Kinda a useless route...
-api.add_route('/pigeoncoop/{ucid}/unseencount', pcoop.UnseenCount("TODO"))
+api.add_route('/pigeoncoop/{ucid}', pcoop.Coop(DB_REF))
+api.add_route('/pigeoncoop/{ucid}/owner', pcoop.Coop(DB_REF)) #Kinda a useless route...
+api.add_route('/pigeoncoop/{ucid}/unseencount', pcoop.UnseenCount(DB_REF))
 
 ### PIGEON ROUTES
-api.add_route('/pigeoncoop/{ucid}/newpigeon/', pigeon.NewPigeon("TODO"))
-api.add_route('/pigeoncoop/{ucid}/pigeon/{upid}', pigeon.Pigeon("TODO"))
-api.add_route('/pigeoncoop/{ucid}/messages/{upid}', pigeon.Messages("TODO"))
+api.add_route('/pigeoncoop/{ucid}/newpigeon/', pigeon.NewPigeon(DB_REF))
+api.add_route('/pigeoncoop/{ucid}/pigeon/{upid}', pigeon.Pigeon(DB_REF))
+api.add_route('/pigeoncoop/{ucid}/messages/{upid}', pigeon.Messages(DB_REF))
