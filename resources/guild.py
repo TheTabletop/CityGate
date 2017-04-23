@@ -9,6 +9,9 @@ import falcon
 import json
 import msgpack
 
+import resources.session
+import resources.util
+
 #ALLOWED_IMAGE_TYPES = (
 #    'image/gif',
 #    'image/jpeg',
@@ -396,3 +399,36 @@ class Invites(object):
 		result = self.guilds.find_one({'_id': ObjectId(ugid)}, projection=["invited_heros"])
 		resp.data = msgpack.packb(json.dumps({"invited_heros": result.get("invited_heros")}))
 		resp.status = falcon.HTTP_200
+
+class NewSession(object):
+	def __init__(self, db_reference):
+		self.session = session.Session(db_reference)
+
+	def on_post(self, resp, req, ugid):
+		game = req.get_json('game')
+		when_string = req.get_json('when')
+		notes = req.get_json('notes')
+		when = util.RfgStrptime(when_string)
+
+		if when is not None and when > datetime.datetime.utcnow():
+			session_id = self.session.NewSession(when, game, notes, ugid)
+
+			if session_id is None:
+				#TODO LOG THIS SHIT
+				resp.json = {"error": "Unable to create session"}
+				resp.status = falcon.HTTP_722
+			else:
+				result = self.guilds.find_one_and_update({'_id': ObjectId(ugid)}, {"$push": {"future_sessions": {'usid': session_id, 'ts': when}}}, return_document=ReturnDocument.AFTER)
+
+				resp.json = {"future_sessions": result.get("future_sessions")}
+				resp.status = falcon.HTTP_202
+		else:
+			resp.json = {"error": "Invalid ts format for 'when', should be 'DD-MM-YY HH24:MI'"}
+			resp.status = falcon.HTTP_723
+
+class UpdateSession(object):
+	def __init__(self, db_reference):
+		self.session = session.Session(db_reference)
+
+	def on_post(self, resp, req, ugid, usid):
+		pass
