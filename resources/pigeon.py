@@ -63,6 +63,7 @@ class Pigeon(object):
 		resp.data = msgpack.packb(json.dumps({"Success": "Removed hero from the pigeon's list of participants"}))
 		resp.status = falcon.HTTP_202
 
+
 class Messages(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
@@ -81,6 +82,8 @@ class Messages(object):
 
 	def on_post(self, req, resp, ucid, upid):
 
+		add_message(self, req, resp, ucid, upid)
+
 		if "Error" in message:
 			resp.data = msgpack.packb(json.dumps(data))
 			resp.status = falcon.HTTP_500
@@ -89,8 +92,10 @@ class Messages(object):
 		result = self.pigeons.find_one({"_id": ObjectId(upid)})
 
 		if result is not None:
-			#toNotify = result.
+			# toNotify = result.
 			pass
 		else:
 			resp.data = msgpack.packb(json.dumps({"Error": "Unable to find pigeon to add message"}))
 			resp.status = falon.HTTP_404
+
+
