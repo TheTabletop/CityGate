@@ -24,7 +24,7 @@ class Coop(object):
 		})
 		return coopObject.inserted_id
 
-	def on_get(self, resp, req, ucid):
+	def on_get(self, req, resp, ucid):
 		coop = self.coops.find_one({'_id': ObjectId(ucid)})
 
 		resp.data = msgpack.packb(json.dumps(coop))
@@ -42,7 +42,7 @@ class Pigeons(object):
 		self.db = MongoClient().greatLibrary
 		self.coops = self.db.pigeoncoops
 
-	def on_get(self, resp, req, upid):
+	def on_get(self, req, resp, upid):
 		coop = self.coops.find_one({'_id': ObjectId(ucid)}, projection=['pigeons'])
 
 		resp.data = msgpack.packb(json.dumps({'pigeons': coop.get('pigeons')}))

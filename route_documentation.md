@@ -444,8 +444,6 @@ www.todo.com/hero/{uhid}/companionrequest
 	]
 }
 ```
-
-
 ### on_delete
 * **Send session token with requests:** Yes
 * __returns 202 on success__
