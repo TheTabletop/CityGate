@@ -534,8 +534,11 @@ class NextSession(object):
 		self.guilds = db_reference.guilds
 		self.session = session.Session(db_reference)
 
-	def on_get(self, req, resp, ugid,):
-		self.guilds.find_one({'_id': ObjectId(ugid)}, {''})
+	def on_get(self, req, resp, ugid):
+		result = self.guilds.find_one({'_id': ObjectId(ugid)}, projection=['future_sessions'])
+
+
+
 
 # If you set both just_future and just_previoust to True, you will automatically get False, don't be stupid.
 def GuildHasSession(ugid, usid, guild_col_ref, just_future=False, just_perivious=False):
