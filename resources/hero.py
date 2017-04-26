@@ -47,7 +47,8 @@ class NewHero(object):
 				"requested_companions": [],
 				"companion_requests": [],
 				"ucid": None,
-				"upcoming_sessions": []
+				"location": "",
+				"address": "",
 			})
 		self.heros.update_one({'_id': heroObject}, {'$set': {'ucid': pcoop.Coop.Create(heroObject.inserted_id).inserted_id}})
 		resp.data = msgpack.packb({"uhid": "{}".format(heroObject.inserted_id)})

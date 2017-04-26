@@ -35,7 +35,8 @@ class FormGuild(object):
 			{
 				"guildname": req.get_param('guildname'),
 				"charter": req.get_param('charter'),
-				"location": "",
+				"address": "",
+				"coord": "",
 				"games": [],
 				"members": [],
 				"future_sessions": [],
@@ -536,9 +537,20 @@ class NextSession(object):
 
 	def on_get(self, req, resp, ugid):
 		result = self.guilds.find_one({'_id': ObjectId(ugid)}, projection=['future_sessions'])
+		sessions = sorted(result.get('future_sessions'),  key=lambda x:x['start'])
+		while sessions[0]['start'] < datetime.datetime.utcnow():
+			session = sessions.pop(0)
+			self.guilds.update_one({'_id': ObjectId(ugid)}, {'$pull': {'future_sessions': {'usid': session.usid}}, '$push': {'previous_sessions': session}})
 
+		next_session = self.session.GetSession(sessions[0].get('usid'))
 
-
+		resp.json = {
+			'usid': "%s".format(next_session.get('_id'),
+			'game': next_session.get('game'),
+			'start': next_session.get('start'),
+			'notes': next_session.get('notes')
+		}
+		resp.status = falcon.HTTP_200
 
 # If you set both just_future and just_previoust to True, you will automatically get False, don't be stupid.
 def GuildHasSession(ugid, usid, guild_col_ref, just_future=False, just_perivious=False):
