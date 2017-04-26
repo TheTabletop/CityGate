@@ -84,18 +84,29 @@ class Messages(object):
 
 		add_message(self, req, resp, ucid, upid)
 
-		if "Error" in message:
-			resp.data = msgpack.packb(json.dumps(data))
-			resp.status = falcon.HTTP_500
 
 	def add_message(self, req, resp, ucid, upid):
 		result = self.pigeons.find_one({"_id": ObjectId(upid)})
 
 		if result is not None:
+			message = req.get_json('message')
+			sender = req.get_json('sender')
+			ts = req.get_json('ts')
+
+			if message is None:
+				resp.data = msgpack.packb(json.dumps({"Error": "Unable to find message content"}))
+				resp.status = falcon.HTTP_404
+			if sender is None:
+				resp.data = msgpack.packb(json.dumps({"Error": "Unable to find sender"}))
+				resp.status = falcon.HTTP_404
+			if ts is None:
+				resp.data = msgpack.packb(json.dumps({"Error": "Unable to find timestamp"}))
+				resp.status = falcon.HTTP_404
+			else:
+				self.pigeons.update_one({'_id': ObjectId(upid)}, {'$push': {"messages": message, "sender": sender, "ts": ts}})
 			# toNotify = result.
-			pass
 		else:
 			resp.data = msgpack.packb(json.dumps({"Error": "Unable to find pigeon to add message"}))
-			resp.status = falon.HTTP_404
+			resp.status = falcon.HTTP_404
 
 
