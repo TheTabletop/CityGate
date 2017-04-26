@@ -475,7 +475,7 @@ class Session(object):
 				resp.json = {
 					'usid': session.get('_id'),
 					'game': session.get('game'),
-					'start': session.get('start')
+					'start': session.get('start'),
 					'notes': session.get('notes')
 				}
 				resp.status = falcon.HTTP_200
@@ -518,11 +518,11 @@ class Sessions(object):
 		fs_big = []
 		ps_mini = reuslt.get('previous_sessions')
 		ps_big = []
-		for sesh if fs_mini:
+		for sesh in fs_mini:
 			full_session = self.session.GetSession(sesh.get('usid'))
 			if full_session:
 				fs_big.append(full_session)
-		for sesh if ps_mini:
+		for sesh in ps_mini:
 			full_session = self.session.GetSession(sesh.get('usid'))
 			if full_session:
 				ps_big.append(full_session)
@@ -545,7 +545,7 @@ class NextSession(object):
 		next_session = self.session.GetSession(sessions[0].get('usid'))
 
 		resp.json = {
-			'usid': "%s".format(next_session.get('_id'),
+			'usid': "%s".format(next_session.get('_id')),
 			'game': next_session.get('game'),
 			'start': next_session.get('start'),
 			'notes': next_session.get('notes')
