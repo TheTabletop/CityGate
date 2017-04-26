@@ -20,23 +20,28 @@ class Session(object):
         else:
             return None
 
-    def UpdateSessionGame(self, game, usid):
-        result = self.sessions.find_one_and_update({'_id': ObjectId(usid)}, {'$set': {'game': game}}, return_document=ReturnDocument.AFTER)
-        return result.get('game')
+    def UpdateSession(self, usid, game=None, start=None, notes=None):
+        mongoDict = {'$set': {}}
+        if game:
+            mongoDict['$set']['game'] = game
+        if time:
+            mongoDict['$set']['start'] = start
+        if notes:
+            mongoDict['$set']['notes'] = notes
+        result = self.sessions.find_one_and_update({'_id': ObjectId(usid)}, mongoDict, return_document=ReturnDocument.AFTER)
 
-    def UpdateSessionTime(self, time, usid):
-        result = self.sessions.find_one_and_update({'_id': ObjectId(usid)}, {'$set': {'time': time}}, return_document=ReturnDocument.AFTER)
-        return result.get('time')
+        return result
 
-    def UpdateSessionNotes(self, notes, usid):
-        result = self.sessions.find_one_and_update({'_id': ObjectId(usid)}, {'$set': {'notes': notes}}, return_document=ReturnDocument.AFTER)
-        return result.get('notes')
+    def GetSession(self, usid):
+        return self.sessions.find_one({'_id': ObjectId(usid)})
+
+    def GetAllGuildSessions(self, ugid):
+        return self.sessions.find({'ugid': ugid})
 
     def DeleteSession(self, usid):
         result = self.sessions.delete_one({'_id': ObjectId(usid)})
 
         return result.acknowledged and result.delete_count!=0
-
 
     def DeleteAllGuildSessions(self, ugid):
         self.sessions.delete_many({'ugid': ugid})
