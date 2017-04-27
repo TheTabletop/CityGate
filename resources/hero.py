@@ -3,6 +3,7 @@ import uuid
 import mimetypes
 
 from pymongo import MongoClient
+from pymongo import ReturnDocument
 from bson import ObjectId
 
 import falcon
@@ -43,7 +44,11 @@ class NewHero(object):
 				"companions": [],
 				"guild_invites": [],
 				"requested_guilds": [],
-				"ucid": None
+				"requested_companions": [],
+				"companion_requests": [],
+				"ucid": None,
+				"location": "",
+				"address": "",
 			})
 		self.heros.update_one({'_id': heroObject}, {'$set': {'ucid': pcoop.Coop.Create(heroObject.inserted_id).inserted_id}})
 		resp.data = msgpack.packb({"uhid": "{}".format(heroObject.inserted_id)})
@@ -296,4 +301,76 @@ class Invites(object):
 	def on_get(self, req, resp, uhid):
 		result = self.heros.find_one({'_id': ObjectId(uhid)}, projection=["guild_invites"])
 		resp.data = msgpack.packb(json.dumps({"guild_invites": resp.get('guild_invites')}))
+		resp.status = falcon.HTTP_200
+
+class CompanionRequest(object):
+	def __init__(self, db_reference):
+		self.db = db_reference
+		self.heros = self.db.heros
+
+	def on_post(self, req, resp, uhid):
+		requestee = req.get_json('requestee', dtype=str)
+		result = self.heros.update_one({'_id': ObjectId(requestee)}, {'$push': {'companion_requests': uhid}})
+
+		if result.matcheds_count == 0:
+			resp.json = {"error": "Hero not found"}
+			resp.status = falcon.HTTP_410
+		elif result.modified_count == 0:
+			resp.json = {"error": "Could not get on hero's companion requests list"}
+			resp.status = falcon.HTTP_500
+		else:
+			result = self.heros.find_one_and_update({'_id': ObjectId(uhid)}, {'$push': {'requested_companions': requestee}}, return_document=ReturnDocument.AFTER)
+			resp.json = {"requested_companions": result.get('requested_companions')}
+			resp.status = falcon.HTTP_202
+
+	def on_delete(self, req, resp, uhid):
+		requestee = req.get_json('requestee', dtype=str)
+		r1 = self.heros.update_one({'_id': requestee}, {'$pull': {'companion_requests': uhid}})
+		r2 = self.heros.find_one_and_update({'_id': uhid}, {'$pull': {'requested_companions': requestee}}, return_document=ReturnDocument.AFTER)
+
+		if r1.matched_count == 0:
+			resp.json = {'error': 'Could not locate specified hero', 'requested_companions': r2.get('requested_companions')}
+			resp.status = falcon.HTTP_410
+		else:
+			resp.json = {'requested_companions': r2.get('requested_companions')}
+			resp.stats = falcon.HTTP_202
+
+class CompanionRequestResponse(object):
+	def __init__(self, db_reference):
+		self.db = db_reference
+		self.heros = self.db.heros
+
+	def on_post(self, req, resp, uhid):
+		accept = req.get_json('decision', dtype=bool)
+		requester = req.get_json('requester', dtype=str)
+		r1 = None
+		r2 = None
+		if accept:
+			r1 = self.heros.update_one({'_id': ObjectId(requester)}, {'$pull': {'requested_companions': uhid}, '$push': {'companions': uhid}})
+			r2 = self.heros.update_one({'_id': ObjectId(uhid)}, {'$pull': {'companion_requests': requester}, '$push': {'companions': requester}})
+		else:
+			r1 = self.heros.update_one({'_id': ObjectId(requester)}, {'$pull': {'requested_companions': uhid}})
+			r2 = self.heros.update_one({'_id': ObjectId(uhid)}, {'$pull': {'companion_requests': requester}})
+
+		final_r = self.heros.find_one({'_id': ObjectId(uhid)}, project=["companions", "companion_requests"])
+
+		if r1.matched_count + r2.matched_count == 2 and r1.modified_count + r2.modified_count >= 1:
+			resp.json = {"result": "Success!", "companions": final_r.get("companions"), "companion_requests": final_r.get("companion_requests")}
+			resp.status = falon.HTTP_200
+		elif r1.matched_count + r2.matched_count < 2:
+			resp.json = {"error": "Could not find requester"}
+			resp.status = falcon.HTTP_410
+		else:
+			resp.json = {"error": "Invalid companion request"}
+			resp.status = falcon.HTTP_740
+
+
+class CompanionRequests(object):
+	def __init__(self, db_reference):
+		self.db = db_reference
+		self.heros = self.db.heros
+
+	def on_get(self, req, resp, uhid):
+		result = self.heros.find_one({'_id': ObjectId(uhid)}, projection=["companion_requests", "requested_companions"])
+		resp.json = {'companion_requests': result.get('companion_requests'), 'requested_companions': result.get('requested_companions')}
 		resp.status = falcon.HTTP_200

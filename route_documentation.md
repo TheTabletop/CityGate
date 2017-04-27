@@ -21,6 +21,9 @@ If you think a route should be accepting/returning different things or if routes
 	* [CommissionKey](#commissionkey)
 	* [Invites](#invites)
 	* [Requests](#requests)
+	* [CompanionRequest](#companionrequest)
+	* [CompanionRequests](#companionrequests)
+	* [CompanionRequestResponse](#companionrequestresponse)
 * [Guild Routes](#guild-routes)
 	* [FormGuild](#formguild)
 	* [Guild](#guild)
@@ -415,6 +418,109 @@ Uhid associated with session token must be same as uhid in url.
 ```python
 {
 	"requested_guilds": ["guilds", "hero", "requested", "to", "join"]
+}
+```
+## CompanionRequest
+www.todo.com/hero/{uhid}/companionrequest
+### on_post
+* **Send session token with requests:** Yes
+* __returns 202 on success__
+
+**Expects json with request**
+```python
+{
+	"requestee": "<uhid>"
+}
+```
+
+**Retuns json with response**
+```python
+{
+	"requested_companions": [
+		{
+			"name": "<hero name>",
+			"uhid": "<uhid>"
+		},# repeat...
+	]
+}
+```
+### on_delete
+* **Send session token with requests:** Yes
+* __returns 202 on success__
+
+**Expects json with request**
+```python
+{
+	"requestee": "<uhid>"
+}
+```
+
+**Retuns json with response**
+```python
+{
+	"requested_companions": [
+		{
+			"name": "<hero name>",
+			"uhid": "<uhid>"
+		},# repeat...
+	]
+	# also an "error" key with message on error
+}
+```
+## CompanionRequests
+www.todo.com/hero/{uhid}/companionrequests
+### on_get
+* **Send session token with requests:** Yes
+* __returns 200 on success__
+
+**Returns json with response**
+```python
+{
+	"requested_companions": [
+		{
+			"name": "<hero name>",
+			"uhid": "<uhid>"
+		}, # repeat...
+	],
+	"companion_requests": [
+		{
+			"name": "<hero name>",
+			"uhid": "<uhid>"
+		}, # repeat...
+	]
+}
+```
+
+## CompanionRequestResponse
+www.todo.com/hero/{uhid}/companionrequestresponse
+### on_post
+* **Send session token with requests:** Yes
+* __returns 202 on success__
+
+**Expects json with request**
+```python
+{
+	"requester": uhid,
+	"accept": True/False
+}
+```
+
+**Returns json with response**
+```python
+{
+	"companions": [
+		{
+			"name": "<hero name>",
+			"uhid": "<uhid>"
+		}, # repeat...
+	],
+	"companion_requests": [
+		{
+			"name": "<hero name>",
+			"uhid": "<uhid>"
+		}, # repeat...
+	]
+	# On error will instead return a dict with "error" as a key and an error message
 }
 ```
 # Guild Routes
