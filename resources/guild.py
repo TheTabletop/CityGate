@@ -27,7 +27,6 @@ class FormGuild(object):
 
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.guilds = self.db.guilds
 
 	def on_post(self, req, resp):
@@ -55,7 +54,6 @@ class FormGuild(object):
 class Guild(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.guilds = self.db.guilds
 
 	def on_get(self, req, resp, ugid):
@@ -82,7 +80,6 @@ class Guild(object):
 class Name(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.guilds = self.db.guilds
 
 	def on_get(self, req, resp, ugid):
@@ -109,7 +106,6 @@ class Name(object):
 class Charter(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.guilds = self.db.guild
 
 	def on_get(self, req, resp, ugid):
@@ -136,7 +132,6 @@ class Charter(object):
 class Session(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.guilds = self.db.guilds
 
 	def on_get(self, req, resp, ugid):
@@ -164,7 +159,6 @@ class Session(object):
 class Location(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.guilds = self.db.guilds
 
 	def on_get(self, req, resp, ugid):
@@ -189,7 +183,6 @@ class Location(object):
 class Games(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.guilds = self.db.guilds
 
 	def on_get(self, req, resp, ugid):
@@ -213,7 +206,6 @@ class Games(object):
 class Members(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.guilds = self.db.guilds
 
 	def on_get(self, req, resp, ugid):
@@ -234,7 +226,6 @@ class Members(object):
 class RequestToJoinGuild(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.guilds = self.db.guilds
 		self.heros = self.db.heros
 
@@ -255,7 +246,6 @@ class RequestToJoinGuild(object):
 class RespondToHeroRequest(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.guilds = self.db.guilds
 		self.heros = self.db.heros
 
@@ -278,7 +268,6 @@ class RespondToHeroRequest(object):
 class InviteHeroToJoin(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.guilds = self.db.guilds
 		self.heros = self.db.heros
 
@@ -299,7 +288,6 @@ class InviteHeroToJoin(object):
 class RespondToGuildInvite(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.guilds = self.db.guilds
 		self.heros = self.db.heros
 
@@ -322,7 +310,6 @@ class RespondToGuildInvite(object):
 class LeaveGuild(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.guilds = self.db.guilds
 		self.heros = self.db.heros
 
@@ -382,7 +369,6 @@ class LeaveGuild(object):
 class Requests(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.guilds = self.db.guilds
 
 	def on_get(self, req, resp, ugid):
@@ -393,7 +379,6 @@ class Requests(object):
 class Invites(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.guilds = self.db.guilds
 
 	def on_get(self, req, resp, ugid):

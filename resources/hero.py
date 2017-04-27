@@ -28,30 +28,36 @@ class NewHero(object):
 
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.heros = self.db.heros
 
 	def on_post(self, req, resp):
-		params = json.loads(req.stream.read().decode("utf-8") )
-		heroObject = self.heros.insert_one(
-			{
-				"email": params.get('email'),
-				"playername": params.get('playername'),
-				"heroname" : params.get('heroname'),
-				"games": params.get('games'),
-				"backstory": params.get('backstory'),
-				"key": hashlib.sha224(params.get('key').encode('utf-8')).hexdigest(),
-				"companions": [],
-				"guild_invites": [],
-				"requested_guilds": [],
-				"requested_companions": [],
-				"companion_requests": [],
-				"ucid": None,
-				"location": "",
-				"address": "",
-			})
+		print("Trying to insert hero\n")
+		try:
+			heroObject = self.heros.insert_one(
+				{
+					"email": req.get_json('email', dtype=str),
+					"playername": req.get_json('playername', dtype=str),
+					"heroname" : req.get_json('heroname', dtype=str),
+					"games": [],
+					"backstory": req.get_json('backstory', dtype=str),
+					"key": hashlib.sha224(req.get_json('key').encode('utf-8')).hexdigest(),
+					"companions": [],
+					"guild_invites": [],
+					"requested_guilds": [],
+					"requested_companions": [],
+					"companion_requests": [],
+					"ucid": None,
+					"location": "",
+					"address": "",
+				})
+		except Exception as e:
+			resp.json = e
+			resp.status = falcon.HTTP_744
+			return
+		print("Insert of hero returned\nTrying to update hero with it's pigeon coop\n")
 		self.heros.update_one({'_id': heroObject}, {'$set': {'ucid': pcoop.Coop.Create(heroObject.inserted_id).inserted_id}})
-		resp.data = msgpack.packb({"uhid": "{}".format(heroObject.inserted_id)})
+		print("Inserted pigeon coop")
+		resp.json = {"uhid": "{}".format(heroObject.inserted_id)}
 		resp.status = falcon.HTTP_201
 
 	#Do we want to do anything with this?
@@ -62,38 +68,38 @@ class Hero(object):
 
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.heros = self.db.heros
 
 	# For updating a hero's Info
 	# Can only edit hero info for hero id of session token
 	def on_post(self, req, resp, uhid):
-		pass #TODO
+		resp.status = falcon.HTTP_404
 
 	# Get a hero by unique hero id (uhid)
 	# Must have an active user session token
 	def on_get(self, req, resp, uhid):
 		result = self.heros.find_one({"_id": ObjectId(uhid)})
 
-		if result.count() == 0:
-			resp.data = msgpack.packb({"Error": "We could not find that hero, they must have nat 20'd  their stealth check"})
-			resp.status = falcon.HTTP_404
-		elif result.count() == 1:
+		data = None
+		status = None
+
+		if result is not None:
 			hero = result
 			for k, v in hero.items():
 				if type(hero[k]) is ObjectId:
 					temp = "{}".format(v)
 					hero[k] = temp
-			resp.data = msgpack.packb(json.dumps(hero))
-			resp.status = falcon.HTTP_200
+			data = hero
+			status = falcon.HTTP_200
 		else:
-			resp.data = msgpack.packb({"Error": "Somehow there is hero identity theft, damn rogues..."})
-			resp.status = falcon.HTTP_724
+			data = {"Error": "Somehow there is hero identity theft, damn rogues..."}
+			status = falcon.HTTP_724
+		resp.data = str.encode(json.dumps(data))
+		resp.status = status
 
 class PlayerName(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.heros = self.db.heros
 
 	def on_post(self, req, resp, uhid):
@@ -120,7 +126,6 @@ class PlayerName(object):
 class HeroName(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.heros = self.db.heros
 
 	def on_post(self, req, resp, uhid):
@@ -147,7 +152,6 @@ class HeroName(object):
 class Email(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.heros = self.db.heros
 
 	def on_post(self, req, resp, uhid):
@@ -174,7 +178,6 @@ class Email(object):
 class Companions(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.heros = self.db.heros
 
 	def on_post(self, req, resp, uhid):
@@ -203,7 +206,6 @@ class Companions(object):
 class Key(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.heros = self.db.heros
 
 	def on_post(self, req, resp, uhid):
@@ -228,7 +230,6 @@ class Key(object):
 class ForgeKey(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.heros = self.db.heros
 		self.forgeCommissions = self.db.forgeCommissions
 
@@ -254,7 +255,6 @@ class ForgeKey(object):
 class CommissionKey(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.heros = self.db.heros
 		self.forgeCommissions = self.db.forgeCommissions
 
@@ -284,7 +284,6 @@ class CommissionKey(object):
 class Requests(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.heros = self.db.heros
 
 	def on_get(self, req, resp, uhid):
@@ -295,7 +294,6 @@ class Requests(object):
 class Invites(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.heros = self.db.heros
 
 	def on_get(self, req, resp, uhid):

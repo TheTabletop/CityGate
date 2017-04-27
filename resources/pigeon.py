@@ -15,7 +15,6 @@ import resources.pigeoncoop as coop
 class NewPigeon(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.pigeons = self.db.pigeons
 
 	def on_post(self, req, resp, ucid):
@@ -46,7 +45,6 @@ class NewPigeon(object):
 class Pigeon(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.pigeons = self.db.pigeons
 		self.coops = self.db.pigeoncoops
 
@@ -66,7 +64,6 @@ class Pigeon(object):
 class Messages(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.pigeons = self.db.pigeons
 
 	def on_get(self, req, resp, ucid, upid):

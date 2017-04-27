@@ -14,7 +14,6 @@ class Login(object):
 
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.userAuth = self.db.userAuth
 		#ignore create index issue for now as we will be switching to redis
 		#self.userAuth.create_index({"expires": 1}, {'expireAfterSeconds': 0})
@@ -35,7 +34,6 @@ class updateExpire(object):
 
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.userAuth = self.db.userAuth
 
 	def incrementExpire(self):
@@ -49,7 +47,6 @@ class checkuhid(object):
 
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.userAuth = self.db.userAuth
 
 	def checkid(self, currUserID, sessionID):
@@ -59,7 +56,6 @@ class checkuhid(object):
 class Tokens(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.userAuth = self.db.userAuth
 
 	def TokenExists(self, req, resp):

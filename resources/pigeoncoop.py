@@ -13,7 +13,6 @@ import datetime
 class Coop(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.coops = self.db.pigeoncoops
 
 	def create(self, uhid):
@@ -39,7 +38,6 @@ class Coop(object):
 class Pigeons(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.coops = self.db.pigeoncoops
 
 	def on_get(self, req, resp, upid):
@@ -65,7 +63,6 @@ class Owner(object):
 class UnseenCount(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.coops = self.db.pigeoncoops
 
 	def on_get(self, req, resp, ucid):

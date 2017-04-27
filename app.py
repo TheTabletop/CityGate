@@ -1,20 +1,24 @@
 import falcon
 import falcon_jsonify
 import msgpack
+import json
 import resources.hero as hero
 import resources.guild as guild
 import resources.search as search
 import resources.pigeoncoop as pcoop
 import resources.pigeon as pigeon
 import resources.userAuth as auth
+from falcon_cors import CORS
 
 from pymongo import MongoClient
 
-api = application = falcon.API(middleware=[falcon_jsonify.Middleware(help_messages=True)])
+cors = CORS(allow_all_origins=True)
+
+api = application = falcon.API(middleware=[falcon_jsonify.Middleware(help_messages=True), cors.middleware])
 
 #TODO Edit <USR> and <PASSWORD> before deploy
 #TODO Edit Change TestLibrary to GreatLibrary before deploy
-DB_REF = MongoClient(mongodb://<USR>:<PASSWORD>@cluster0-shard-00-00-ygomb.mongodb.net:27017,cluster0-shard-00-01-ygomb.mongodb.net:27017,cluster0-shard-00-02-ygomb.mongodb.net:27017/TestLibrary?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin)
+DB_REF = MongoClient("mongodb://<USR>:<PASSWORD>@cluster0-shard-00-00-ygomb.mongodb.net:27017,cluster0-shard-00-01-ygomb.mongodb.net:27017,cluster0-shard-00-02-ygomb.mongodb.net:27017/TestLibrary?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin").GreatLibrary
 #image_collection = images.Collection(storage_path)
 #image = images.Item(storage_path)
 
@@ -24,8 +28,8 @@ DB_REF = MongoClient(mongodb://<USR>:<PASSWORD>@cluster0-shard-00-00-ygomb.mongo
 #Health check
 class CheckCabbage(object):
 	def on_get(self, req, resp):
+		resp.data = str.encode(json.dumps({"success": "We've got cabbages my liege!"}))
 		resp.status = falcon.HTTP_200
-		resp.data = msgpack.packb({"Msg": "We've got cabbages my liege!"})
 
 ### HEALTH CHECK
 api.add_route('/checkCabbage', CheckCabbage())
