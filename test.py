@@ -385,13 +385,14 @@ class checkPidgeons(unittest.TestCase):
 		"send_to": [self.barId],
 		"messages": ["blah blah blah", "words words"]
 		}
-		r = requests.post(string.Formatter.vformat("http://localhost:8000/pidgeon/{barId}/{barId}/newPidgeon"), data=json.dumps(payload))
+		r = requests.post(string.Formatter.vformat("http://localhost:8000/pidgeon/{self.barId}/newPidgeon"), data=json.dumps(payload))
 		params = json.loads(r.content.stream.read().decode("utf-8")) #or r.text
+		params.
 		assertNotEqual(params.get("upid"), 0)
 		assertEqual(r.status_code, 202)
 
 	def testPigeonGet(self):
-		r = requests.get(string.Formatter.vformat("http://localhost:8000/pidgeon/{barId}/{barId}/newPidgeon"), data=json.dumps(payload))
+		r = requests.get(string.Formatter.vformat("http://localhost:8000/pidgeon/{self.barId}/newPidgeon"), data=json.dumps(payload))
 		assertNotEqual(data, None)
 
 if __name__ == '__main__':

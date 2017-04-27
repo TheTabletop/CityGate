@@ -37,6 +37,8 @@ class NewPigeon(object):
 
 				for uhid in toUpdate:
 					coop.Pigeons.add_pigeon(uhid, createResult.inserted_id, False)
+				resp.data = msgpack.packb(json.dumps({"upid":createResult.inserted_id}))
+				resp.status = falcon.HTTP_201
 			else:
 				resp.data = msgpack.packb(json.dumps({"Error": "Unable to create message"}))
 				resp.status = falcon.HTTP_500
