@@ -29,35 +29,60 @@ class NewHero(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
 		self.heros = self.db.heros
+		self.coop = pcoop.Coop(db_reference)
 
 	def on_post(self, req, resp):
-		print("Trying to insert hero\n")
-		try:
-			heroObject = self.heros.insert_one(
-				{
-					"email": req.get_json('email', dtype=str),
-					"playername": req.get_json('playername', dtype=str),
-					"heroname" : req.get_json('heroname', dtype=str),
-					"games": [],
-					"backstory": req.get_json('backstory', dtype=str),
-					"key": hashlib.sha224(req.get_json('key').encode('utf-8')).hexdigest(),
-					"companions": [],
-					"guild_invites": [],
-					"requested_guilds": [],
-					"requested_companions": [],
-					"companion_requests": [],
-					"ucid": None,
-					"location": "",
-					"address": "",
-				})
-		except Exception as e:
-			resp.json = e
-			resp.status = falcon.HTTP_744
+		params = req.json
+
+		email = params.get('email')
+		playername = params.get('playername')
+		heroname = params.get('heroname')
+		backstory = params.get('backstory')
+		key = params.get('key')
+		games = params.get('games')
+		location = params.get('location')
+		address = params.get('location')
+
+		if email is None:
+			resp.data = str.encode(json.dumps({'error': 'The email param is required'}))
+			resp.status = falcon.HTTP_400
 			return
-		print("Insert of hero returned\nTrying to update hero with it's pigeon coop\n")
-		self.heros.update_one({'_id': heroObject}, {'$set': {'ucid': pcoop.Coop.Create(heroObject.inserted_id).inserted_id}})
-		print("Inserted pigeon coop")
-		resp.json = {"uhid": "{}".format(heroObject.inserted_id)}
+		if playername is None:
+			resp.data = str.encode(json.dumps({'error': 'The playername param is required'}))
+			resp.status = falcon.HTTP_400
+			return
+		if heroname is None:
+			resp.data = str.encode(json.dumps({'error': 'The heroname param is required'}))
+			resp.status = falcon.HTTP_400
+			return
+		if key is None:
+			resp.data = str.encode(json.dumps({'error': 'The key param is required'}))
+			resp.status = falcon.HTTP_400
+			return
+		if games is None:
+			games = []
+		if backstory is None:
+			backstory = ""
+
+		heroObject = self.heros.insert_one(
+			{
+				"email": email,
+				"playername": playername,
+				"heroname": heroname,
+				"games": games,
+				"backstory": backstory,
+				"key": hashlib.sha224(key.encode('utf-8')).hexdigest(),
+				"companions": [],
+				"guild_invites": [],
+				"requested_guilds": [],
+				"requested_companions": [],
+				"companion_requests": [],
+				"ucid": None,
+				"location": "",
+				"address": "",
+			})
+		self.heros.update_one({'_id': ObjectId(heroObject.inserted_id)}, {'$set': {'ucid': self.coop.create(heroObject.inserted_id)}})
+		resp.data = str.encode(json.dumps({"success": "Created a hero with uhid={}".format(heroObject.inserted_id)}))
 		resp.status = falcon.HTTP_201
 
 	#Do we want to do anything with this?
