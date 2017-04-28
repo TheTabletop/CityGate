@@ -17,7 +17,7 @@ class Coop(object):
 
 	def create(self, uhid):
 		coopObject = self.coops.insert_one({
-			'_id': uhid,
+			'_id': ObjectId(uhid),
 			'pigeons': [],
 			'unseen_count': 0
 		})
