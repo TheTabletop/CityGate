@@ -3,6 +3,7 @@ import uuid
 import mimetypes
 
 from pymongo import MongoClient
+from pymongo import ReturnDocument
 from bson import ObjectId
 
 import falcon
