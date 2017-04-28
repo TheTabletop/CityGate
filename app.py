@@ -18,7 +18,9 @@ api = application = falcon.API(middleware=[falcon_jsonify.Middleware(help_messag
 
 #TODO Edit <USR> and <PASSWORD> before deploy
 #TODO Edit Change TestLibrary to GreatLibrary before deploy
-DB_REF = MongoClient("mongodb://<USR>:<PASSWORD>@cluster0-shard-00-00-ygomb.mongodb.net:27017,cluster0-shard-00-01-ygomb.mongodb.net:27017,cluster0-shard-00-02-ygomb.mongodb.net:27017/TestLibrary?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin").GreatLibrary
+#DB_REF = MongoClient("mongodb://<USR>:<PASSWORD>@cluster0-shard-00-00-ygomb.mongodb.net:27017,cluster0-shard-00-01-ygomb.mongodb.net:27017,cluster0-shard-00-02-ygomb.mongodb.net:27017/TestLibrary?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin").GreatLibrary
+DB_REF = MongoClient().GreatLibary
+
 #image_collection = images.Collection(storage_path)
 #image = images.Item(storage_path)
 
