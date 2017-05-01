@@ -8,7 +8,6 @@ from bson import ObjectId
 
 import falcon
 import json
-import msgpack
 
 import resources.session
 import resources.util
@@ -31,26 +30,52 @@ class FormGuild(object):
 		self.guilds = self.db.guilds
 
 	def on_post(self, req, resp):
+		params = req.json
+
+		guildname = params.get('guildname')
+		charter = params.get('charter')
+		address = params.get('address')
+		coord = params.get('coord')
+		games = params.get('games')
+		creator = params.get('creator')
+
+		if guildname is None or guildname =="":
+			resp.data = str.encode(json.dumps({'error': 'The guild must have a guildname'}))
+			resp.status = falcon.HTTP_400
+			return
+		if charter is None or charter == "":
+			resp.data = str.encode(json.dumps({'error': 'Please provide a charter, a brief description of the guild'}))
+			resp.status = falcon.HTTP_400
+			return
+		if games is None or len(games) == 0:
+			resp.data = str.encode(json.dumps({'error': 'Please provide at least one game that the guild plays'}))
+			resp.status = falcon.HTTP_400
+			return
+		if address is None:
+			address = ""
+		if coord is None:
+			coord = ""
+		if creator is None or creator == "":
+			resp.data = str.encode(json.dumps({'error': ''}))
+			resp.status = falcon.HTTP_400
+			return
+
 		result = self.guilds.insert_one(
 			{
-				"guildname": req.get_param('guildname'),
-				"charter": req.get_param('charter'),
-				"address": "",
-				"coord": "",
-				"games": [],
-				"members": [],
+				"guildname": guildname,
+				"charter": charter,
+				"address": address,
+				"coord": coord,
+				"games": games,
+				"members": [{'uhid': creator, 'admin': True}],
 				"future_sessions": [],
 				"previous_sessions": [],
 				"hero_requests": [],
 				"invited_heros": []
 			})
 
-		resp.data = msgpack.packb({"Info": "Successfully created a new guild with id: {}".format(result)})
+		resp.data = str.encode(json.dumps({"success": "Successfully formed new guild", 'ugid': "%s".format(result.inserted_id)}))
 		resp.status = falcon.HTTP_201
-
-	#Do we want to do anything with this?
-	def on_get(self, req, resp):
-		resp.status = falcon.HTTP_404
 
 class Guild(object):
 	def __init__(self, db_reference):
@@ -58,25 +83,53 @@ class Guild(object):
 		self.guilds = self.db.guilds
 
 	def on_get(self, req, resp, ugid):
-		result = self.guilds.find({"_id": ObjectId(ugid)})
+		result = self.guilds.find_one({"_id": ObjectId(ugid)})
 
-		if result.count() == 0:
-			resp.data = msgpack.packb({"Error": "We could not find that guild, maybe they disbanded?"})
+		if result is None:
+			resp.data = str.encode(json.dumps({"error": "We could not find that guild, maybe they disbanded?"}))
 			resp.status = falcon.HTTP_404
-		elif result.count() == 1:
-			hero = result
-			for k, v in hero.items():
-				if type(hero[k]) is ObjectId:
-					temp = "{}".format(v)
-					hero[k] = temp
-			resp.data = msgpack.packb(json.dumps(hero))
-			resp.status = falcon.HTTP_200
+			return
 		else:
-			resp.data = msgpack.packb({"Error": "Somehow there is are multiple guilds claiming to be this guild, damn thieves guilds"})
-			resp.status = falcon.HTTP_724
+			resp.data = str.encode(json.dumps({
+				'ugid': "%s".format(result.get('_id')),
+				'guildname': result.get('guildname'),
+				'charter': result.get('charter'),
+				'address': result.get('address'),
+				'games': result.get('games'),
+				'members': result.get('members'),
+				'future_sessions': result.get('future_sessions'),
+				'previous_sessions': result.get('previous_sessions')
+			}))
+			resp.status = falcon.HTTP_200
 
 	def on_post(self, req, resp, ugid):
-		pass
+		params = req.json
+
+		guildname = params.get('guildname')
+		charter = params.get('charter')
+		address = params.get('address')
+		coord = params.get('coord')
+		games = params.get('games')
+		creator = params.get('creator')
+		myDict = {}
+
+		if guildname is not None and guildname != "":
+			if myDict.get('$set') is None:
+				myDict['$set'] = {}
+			myDict['$set']['guildname'] = guildname
+		if charter is not None and charter != "":
+			if myDict.get('$set') is None:
+				myDict['$set'] = {}
+			myDict['$set']['charter'] = charter
+		if games is not None and len(games) != 0:
+			if myDict.get('$push') is None:
+				myDict['$push'] = {}
+		if address is not None and address != "":
+			if myDict.get('$set') is None:
+				myDict['$set'] = {}
+		if coord is not None and coord != "":
+			if myDict.get('$set') is None:
+				myDict['$set'] = {}
 
 class Name(object):
 	def __init__(self, db_reference):
@@ -87,22 +140,31 @@ class Name(object):
 		result = self.guilds.find_one({'_id': ObjectId(ugid)}, projection=['guildname'])
 
 		if result is None:
-			resp.data = msgpack.packb({"Failure": "Guild not found"})
-			resp.status = falcon.HTTP_404
-		else:
-			gName = result.get('guildname')
-			resp.data = msgpack.packb({"guildname": gName})
-			resp.status = falcon.HTTP_200
+			resp.data = str.encode(json.dumps({"error": "Unable to find specified guild"}))
+			resp.status = falcon.HTTP_410
+			return
+
+		resp.data = str.encode(json.dumps({'uhid': "%s".format(result.get('_id')), 'guildname': result.get('guildname')}))
+		resp.status = falcon.HTTP_200
 
 	def on_post(self, req, resp, ugid):
-		result = self.guilds.update_one({'_id': ObjectId(ugid)}, {'$inc': {'guildname': req.params_get('guildname')}})
+		params = req.json
 
-		if result.modified_count == 1:
-			resp.data = msgpack.packb({"Success": "Successfully changed guild's name"})
-			resp.status = falcon.HTTP_202
-		else:
-			resp.data = msgpack.packb({"Failed": "Unable to update guild's name"})
+		guildname = params.get('guildname')
+		if guildname is None or len(guildname) == 0:
+			resp.data = str.encode(json.dumps({'error': 'Must provide a guildname with this route'}))
+			resp.status = falcon.HTTP_400
+			return
+
+		result = self.guilds.find_one_and_update({'_id': ObjectId(ugid)}, {'$set': {'guildname': guildname}}, return_document=ReturnDocument.AFTER)
+
+		if result is None:
+			resp.data = str.encode(json.dumps({"error": "Unable to update guild's name"}))
 			resp.status = falcon.HTTP_500
+			return
+
+		resp.data = str.encode(json.dumps({'ugid': "%s".format(result.get('_id')), 'guildname': result.get('guildname')}))
+		resp.status = falcon.HTTP_202
 
 class Charter(object):
 	def __init__(self, db_reference):
@@ -113,49 +175,31 @@ class Charter(object):
 		result = self.guilds.find_one({'_id': ObjectId(ugid)}, projection=["charter"])
 
 		if result is None:
-			resp.data = msgpack.packb({"Failure": "Guild not found"})
-			resp.status = falcon.HTTP_404
-		else:
-			charter = result.get('charter')
-			resp.data = msgpack.packb({"charter": charter})
-			resp.status = falcon.HTTP_200
+			resp.data = str.encode(json.dumps({"error": "Unable to find specified guild"}))
+			resp.status = falcon.HTTP_410
+			return
+
+		resp.data = str.encode(json.dumps({'uhid': "%s".format(result.get('_id')), 'charter': result.get('charter')}))
+		resp.status = falcon.HTTP_200
 
 	def on_post(self, req, resp, ugid):
-		result = self.guilds.update_one({'_id': ObjectId(ugid)}, {'$inc': {'charter': charter}})
+		params = req.json
 
-		if result.modified_count == 1:
-			resp.data = msgpack.packb({"Success": "Successfully updated guild's charter"})
-			resp.status = falcon.HTTP_202
-		else:
-			resp.data = msgpack.packb({"Failed": "Unable to update guild's charter"})
-			resp.status = falcon.HTTP_500
+		charter = params.get('charter')
+		if charter is None or len(charter) == 0:
+			resp.data = str.encode(json.dumps({'error': 'Must provide a charter with this route'}))
+			resp.status = falcon.HTTP_400
+			return
 
-class Session(object):
-	def __init__(self, db_reference):
-		self.db = db_reference
-		self.guilds = self.db.guilds
-
-	def on_get(self, req, resp, ugid):
-		result = self.guilds.find_one({'_id': objectId(ugid)}, projection=['nstime', 'nsgame', 'location'])
+		result = self.guilds.find_one_and_update({'_id': ObjectId(ugid)}, {'$set': {'charter': charter}}, return_document=ReturnDocument.AFTER)
 
 		if result is None:
-			resp.data = msgpack.packb({"Failure": "Guild not found"})
-			resp.status = falcon.HTTP_404
-		else:
-			resp.data = msgpack.packb({"game": result.get('nsgame'), "time": result.get('nstime'), "location": result.get('location')})
-			resp.status = falcon.HTTP_200
-
-	def on_post(self, req, resp, ugid):
-		result = self.guilds.update_one({'_id': ObjectId(ugid)}, {'$inc': {'nsgame': req.params_get('game'), 'nstime': req.params_get('time'), 'location': req.params_get('location')}})
-
-		if result.modified_count == 1:
-			resp.data = msgpack.packb({"Success": "Successfully updated guild's next session"})
-			resp.status = falcon.HTTP_202
-		else:
-			resp.data = msgpack.packb({"Failed": "Unable to update guild's next session"})
+			resp.data = str.encode(json.dumps({"error": "Unable to update guild's charter"}))
 			resp.status = falcon.HTTP_500
+			return
 
-#TODO: SESSSION STUFFS
+		resp.data = str.encode(json.dumps({'ugid': "%s".format(result.get('_id')), 'charter': result.get('charter')}))
+		resp.status = falcon.HTTP_202
 
 class Location(object):
 	def __init__(self, db_reference):
@@ -163,23 +207,39 @@ class Location(object):
 		self.guilds = self.db.guilds
 
 	def on_get(self, req, resp, ugid):
-		result = self.guilds.find_one({'_id': ObjectId(ugid)}, projection=['location'])
+		result = self.guilds.find_one({'_id': ObjectId(ugid)}, projection=["address"])
 
-		resp.data = msgpack.packb(result.get('location'))
+		if result is None:
+			resp.data = str.encode(json.dumps({"error": "Unable to find specified guild"}))
+			resp.status = falcon.HTTP_410
+			return
+
+		resp.data = str.encode(json.dumps({'uhid': "%s".format(result.get('_id')), 'address': result.get('address')}))
 		resp.status = falcon.HTTP_200
 
 	def on_post(self, req, resp, ugid):
-		result = self.guilds.update_one({'_id': ObjectId(ugid)}, {'$inc': {'location': req.params_get('location')}})
+		params = req.json
 
-		if result.match_count == 0:
-			resp.data = msgpack.packb({"Error": "Guild not found"})
-			resp.status = falcon.HTTP_404
-		elif result.modified_count == 0:
-			resp.data = msgpack.packb({"Error": "Unable to update guild location"})
+		address = params.get('address')
+		coord = params.get('coord')
+		if address is None or len(address) == 0:
+			resp.data = str.encode(json.dumps({'error': 'Must provide a address with this route'}))
+			resp.status = falcon.HTTP_400
+			return
+		if coord is None or len(coord) == 0:
+			resp.data = str.encode(json.dumps({'error': 'Must provide a coord with this route'}))
+			resp.status = falcon.HTTP_400
+			return
+
+		result = self.guilds.find_one_and_update({'_id': ObjectId(ugid)}, {'$set': {'address': address, 'coord': coord}}, return_document=ReturnDocument.AFTER)
+
+		if result is None:
+			resp.data = str.encode(json.dumps({"error": "Unable to update guild's location."}))
 			resp.status = falcon.HTTP_500
-		else:
-			resp.data = msgpack.packb("Successfully updated guild location")
-			resp.status = falcon.HTTP_202
+			return
+
+		resp.data = str.encode(json.dumps({'ugid': "%s".format(result.get('_id')), 'address': result.get('address')}))
+		resp.status = falcon.HTTP_202
 
 class Games(object):
 	def __init__(self, db_reference):
@@ -189,40 +249,88 @@ class Games(object):
 	def on_get(self, req, resp, ugid):
 		result = self.guilds.find_one({'_id': ObjectId(ugid)}, projection=['games'])
 
-		resp.data = msgpack.pack(result.get('games'))
+		if result is None:
+			resp.data = str.encode(json.dumps({'error': 'Unable to find specified guild.'}))
+			resp.status = falcon.HTTP_410
+			return
+
+		resp.data = str.encode(json.dumps({'ugid': "%s".format(result.get('_id')), 'games': result.get('games')}))
 		resp.status = falcon.HTTP_200
 
 	def on_post(self, req, resp, ugid):
-		result = self.guilds.update_one({'_id': ObjectId(ugid)}, {'$push': {'games': req.get_param('games')}})
+		params = req.json
 
-		resp.data = msgpack.pack({'Success': "Added %s to guild games list".fomrat(req.get_param('games'))})
+		add = params.get('addgames')
+		remove = params.get('removegames')
+		myDict = {}
+
+		if add is not None:
+			myDict['$push'] = {'games': {'$each': add}}
+		if remove is not None:
+			myDict['$pull'] = {'games': {'$each': remove}}
+
+		result = self.guilds.find_one_and_update({'_id': ObjectId(ugid)}, myDict, return_document=ReturnDocument.AFTER)
+
+		if result is None:
+			resp.data = str.encode(json.dumps({'error': 'Unable to update guild\'s game list'}))
+			resp.status = falcon.HTTP_500
+			return
+
+		resp.data = str.encode(json.dumps({'ugid': "%s".format(result.get('_id')), 'games': result.get('games')}))
 		resp.status = falcon.HTTP_202
 
+	#Deprecated
 	def on_delete(self, req, resp, ugid):
-		result = self.guilds.update_one({'_id': ObjectId(ugid)}, {'$push': {'games': req.get_param('games')}})
+		result = self.guilds.update_one({'_id': ObjectId(ugid)}, {'$pull': {'games': {'$each': req.get_param('games')}}})
 
-		resp.data = msgpack.pack({'Success': "Deleted %s from guild games list".fomrat(req.get_param('games'))})
+		resp.data = str.encode(json.dumps({'success': "Removed games from guild's list"}))
 		resp.status = falcon.HTTP_202
 
 class Members(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
 		self.guilds = self.db.guilds
+		self.heros = self.db.heros
 
 	def on_get(self, req, resp, ugid):
 		result = self.guilds.find_one({'_id': ObjectId(ugid)}, projection=['members'])
 
 		if result is None:
-			resp.data = msgpack.packb({"Failure": "Guild not found"})
-			resp.status = falcon.HTTP_404
-		else:
-			#TODO serialize ObjectId data
-			resp.data = msgpack.packb({"game": result.get('nsgame'), "time": result.get('nstime'), "location": result.get('location')})
-			resp.status = falcon.HTTP_200
+			resp.data = str.encode(json.dumps({"error": "Unable to find specified guild."}))
+			resp.status = falcon.HTTP_410
+
+		party = []
+		for member in result.get('members'):
+			hero = self.heros.find_one({'_id': ObjectId(member.get('uhid'))}, projection = ['heroname', 'playername'])
+			party.append({'uhid': member.get('uhid'), 'admin': member.get('admin'), 'heroname': hero.get('heroname'), 'playername': hero.get('playername')})
+
+		resp.data = str.encode(json.dumps({'ugid': "%s".format(result.get('_id')), 'members': party}))
+		resp.status = falcon.HTTP_200
 
 	#TODO make sure user deleting another user has access
 	def on_delete(self, req, resp, ugid):
-		pass
+		params = req.json
+
+		hero = params.get('uhid')
+		if hero is None or len(hero) == 0:
+			resp.data = str.encode(json.dumps({'error': 'Must provide the uhid of a member to remove'}))
+			resp.status = falcon.HTTP_400
+			return
+
+		result = self.guild.find_one_and_update({'_id': ObjectId(ugid)}, {'$pull': {'members': {'uhid': hero}}}, return_document=ReturnDocument.AFTER)
+
+		if result is None:
+			resp.data = str.encode(json.dumps({'error': 'Unable to remove member from guild'}))
+			resp.status = falcon.HTTP_500
+			return
+
+		party = []
+		for member in result.get('members'):
+			hero = self.heros.find_one({'_id': ObjectId(member.get('uhid'))}, projection = ['heroname', 'playername'])
+			party.append({'uhid': member.get('uhid'), 'admin': member.get('admin'), 'heroname': hero.get('heroname'), 'playername': hero.get('playername')})
+
+		resp.data = str.encode(json.dumps({'ugid': "%s".format(result.get('_id')), 'members': party}))
+		resp.status = falcon.HTTP_202
 
 class RequestToJoinGuild(object):
 	def __init__(self, db_reference):
@@ -234,14 +342,14 @@ class RequestToJoinGuild(object):
 		self.heros.update_one({'_id': ObjectId(uhid)}, {'$push': {'requested_guilds': ObjectId(ugid)}})
 		self.guilds.update_one({'_id': ObjectId(ugid)}, {'$push': {'hero_requests': ObjectId(uhid)}})
 
-		resp.data = msgpack.packb({'Success': 'Invited user'})
+		resp.data = str.encode(json.dumps({'success': 'Invited hero.'}))
 		resp.status = falcon.HTTP_202
 
 	def on_delete(self, req, resp, ugid, uhid):
 		self.heros.update_one({'_id': ObjectId(uhid)}, {'$pull': {'requested_guilds': ObjectId(ugid)}})
 		self.guilds.update_one({'_id': ObjectId(ugid)}, {'$pull': {'hero_requests': ObjectId(uhid)}})
 
-		resp.data = msgpack.packb({'Success': 'Uninvited user'})
+		resp.data = str.encode(json.dumps({'success': 'Uninvited hero.'}))
 		resp.status = falcon.HTTP_202
 
 class RespondToHeroRequest(object):
@@ -251,20 +359,27 @@ class RespondToHeroRequest(object):
 		self.heros = self.db.heros
 
 	def on_post(self, req, resp, ugid, uhid):
-		dec = req.params_get('decision')
-		if not (dec == True  or dec == False):
-			resp.data = msgpack.packb({"Error": "Must provide decision param as either 'Accept' or 'Decline'"})
+		params = req.json
+
+		accept = params.get('accept')
+
+		if accept is None or type(accept) is not bool:
+			resp.data = str.encode(json.dumps({"error": "The data value 'accept' must be given as either a true or false value"}))
 			resp.status = falcon.HTTP_400
+			return
+
+		data = None
+		if accept:
+			self.guilds.update_one({'_id': ObjectId(ugid)}, {'$pull': {'invited_heros': ObjectId(uhid)}, '$push': {'membsers': ObjectId(uhid)}})
+			self.heros.update_one({'_id': ObjectId(uhid)}, {'$pull': {'guild_invites': ObjectId(ugid)}, '$push': {'guilds': ObjectId(ugid)}})
+			data = {"Success": "Acknowledged acceptance of inivte"}
 		else:
-			if dec == False:
-				self.guilds.update_one({'_id': ObjectId(ugid)}, {'$pull': {'invited_heros': ObjectId(uhid)}})
-				self.heros.update_one({'_id': ObjectId(uhid)}, {'$pull': {'guild_invites': ObjectId(ugid)}})
-				resp.data = msgpack.packb({"Success": "Acknowledged decline of invite"})
-			elif dec == True:
-				self.guilds.update_one({'_id': ObjectId(ugid)}, {'$pull': {'invited_heros': ObjectId(uhid)}, '$push': {'membsers': ObjectId(uhid)}})
-				self.heros.update_one({'_id': ObjectId(uhid)}, {'$pull': {'guild_invites': ObjectId(ugid)}, '$push': {'guilds': ObjectId(ugid)}})
-				resp.data = msgpack.packb({"Success": "Acknowledged acceptance of inivte"})
-			resp.status = falcon.HTTP_202
+			self.guilds.update_one({'_id': ObjectId(ugid)}, {'$pull': {'invited_heros': ObjectId(uhid)}})
+			self.heros.update_one({'_id': ObjectId(uhid)}, {'$pull': {'guild_invites': ObjectId(ugid)}})
+			data = {"Success": "Acknowledged decline of invite"}
+
+		resp.data = str.encode(json.dumps(data))
+		resp.status = falcon.HTTP_202
 
 class InviteHeroToJoin(object):
 	def __init__(self, db_reference):
@@ -276,14 +391,14 @@ class InviteHeroToJoin(object):
 		self.heros.update_one({'_id': ObjectId(uhid)}, {'$push': {'guild_invites': ObjectId(ugid)}})
 		self.guilds.update_one({'_id': ObjectId(ugid)}, {'$push': {'invited_heros': ObjectId(uhid)}})
 
-		resp.data = msgpack.packb({'Success': 'Invited user'})
+		resp.data = str.encode(json.dumps({'success': 'Invited user'}))
 		resp.status = falcon.HTTP_202
 
 	def on_delete(self, req, resp, ugid, uhid):
 		self.heros.update_one({'_id': ObjectId(uhid)}, {'$pull': {'guild_invites': ObjectId(ugid)}})
 		self.guilds.update_one({'_id': ObjectId(ugid)}, {'$pull': {'invited_heros': ObjectId(uhid)}})
 
-		resp.data = msgpack.packb({'Success': 'Uninvited user'})
+		resp.data = str.encode(json.dumps({'Success': 'Uninvited user'}))
 		resp.status = falcon.HTTP_202
 
 class RespondToGuildInvite(object):
@@ -293,20 +408,27 @@ class RespondToGuildInvite(object):
 		self.heros = self.db.heros
 
 	def on_post(self, req, resp, ugid, uhid):
-		dec = req.params_get('decision')
-		if not (dec == True or dec == False):
-			resp.data = msgpack.packb({"Error": "Must provide decision param as either 'Accept' or 'Decline'"})
+		params = req.json
+
+		accept = params.get('accept')
+
+		if accept is None or type(accept) is not bool:
+			resp.data = str.encode(json.dumps({"error": "The data value 'accept' must be given as either a true or false value"}))
 			resp.status = falcon.HTTP_400
+			return
+
+		data = None
+		if accept:
+			self.guilds.update_one({'_id': ObjectId(ugid)}, {'$pull': {'invited_heros': ObjectId(uhid)}, '$push': {'membsers': ObjectId(uhid)}})
+			self.heros.update_one({'_id': ObjectId(uhid)}, {'$pull': {'guild_invites': ObjectId(ugid)}, '$push': {'guilds': ObjectId(ugid)}})
+			data = {"success": "Acknowledged acceptance of inivte"}
 		else:
-			if dec == False:
-				self.guilds.update_one({'_id': ObjectId(ugid)}, {'$pull': {'invited_heros': ObjectId(uhid)}})
-				self.heros.update_one({'_id': ObjectId(uhid)}, {'$pull': {'guild_invites': ObjectId(ugid)}})
-				resp.data = msgpack.packb({"Success": "Acknowledged decline of invite"})
-			elif dec == True:
-				self.guilds.update_one({'_id': ObjectId(ugid)}, {'$pull': {'invited_heros': ObjectId(uhid)}, '$push': {'membsers': ObjectId(uhid)}})
-				self.heros.update_one({'_id': ObjectId(uhid)}, {'$pull': {'guild_invites': ObjectId(ugid)}, '$push': {'guilds': ObjectId(ugid)}})
-				resp.data = msgpack.packb({"Success": "Acknowledged acceptance of inivte"})
-			resp.status = falcon.HTTP_202
+			self.guilds.update_one({'_id': ObjectId(ugid)}, {'$pull': {'invited_heros': ObjectId(uhid)}})
+			self.heros.update_one({'_id': ObjectId(uhid)}, {'$pull': {'guild_invites': ObjectId(ugid)}})
+			data = {"success": "Acknowledged decline of invite"}
+
+		resp.data = str.encode(json.dumps(data))
+		resp.status = falcon.HTTP_202
 
 class LeaveGuild(object):
 	def __init__(self, db_reference):
@@ -345,7 +467,7 @@ class LeaveGuild(object):
 		else:
 			message['Error_gRemove'] == "Unexpected issue occured..."
 
-		resp.date = msgpack.packb(message)
+		resp.date = str.encode(json.dumps(message))
 
 		#TODO We might want to run extra stuff in cases where sum is between 1-8
 		if hSuccess + gSuccess == 10:
@@ -374,7 +496,13 @@ class Requests(object):
 
 	def on_get(self, req, resp, ugid):
 		result = self.guilds.find_one({'_id': ObjectId(ugid)}, projection=["hero_requests"])
-		resp.data = msgpack.packb(json.dumps({"hero_requests": result.get("hero_requests")}))
+
+		if result is None:
+			resp.data = str.encode(json.dumps({'error': 'Unable to find specified guild.'}))
+			resp.status = falcon.HTTP_410
+			return
+
+		resp.data = str.encode(json.dumps({'ugid': "%s".format(result.get('_id')), "hero_requests": result.get("hero_requests")}))
 		resp.status = falcon.HTTP_200
 
 class Invites(object):
@@ -384,7 +512,13 @@ class Invites(object):
 
 	def on_get(self, req, resp, ugid):
 		result = self.guilds.find_one({'_id': ObjectId(ugid)}, projection=["invited_heros"])
-		resp.data = msgpack.packb(json.dumps({"invited_heros": result.get("invited_heros")}))
+
+		if result is None:
+			resp.data = str.encode(json.dumps({'error': 'Unable to find specified guild.'}))
+			resp.status = falcon.HTTP_410
+			return
+
+		resp.data = str.encode(json.dumps({'ugid': "%s".format(result.get('_id')), "invited_heros": result.get("invited_heros")}))
 		resp.status = falcon.HTTP_200
 
 #TODO Garuantee that user is admin of guild
@@ -393,25 +527,39 @@ class NewSession(object):
 		self.session = session.Session(db_reference)
 
 	def on_post(self, req, resp, ugid):
-		game = req.get_json('game')
-		when_string = req.get_json('when')
-		notes = req.get_json('notes')
-		when = util.RfgStrptime(when_string)
+		params = req.json
 
-		if when is not None and when > datetime.datetime.utcnow():
-			session_id = self.session.NewSession(when, game, notes, ugid)
+		game = params.get('game')
+		start_string = params.get('start')
+		notes = params.get('notes')
+
+		if game is None or game =="":
+			resp.data = str.encode(json.dumps({'error': 'Session must have a game'}))
+			resp.status = falcon.HTTP_400
+			return
+		if time is None or time =="":
+			resp.data = str.encode(json.dumps({'error': 'Session time must be set with \'start\''}))
+			resp.status = falcon.HTTP_400
+			return
+		if notes is None:
+			notes = ""
+
+		start = util.RfgStrptime(when_string)
+
+		if start is not None and when > datetime.datetime.utcnow():
+			session_id = self.session.NewSession(start, game, notes, ugid)
 
 			if session_id is None:
 				#TODO LOG THIS SHIT
-				resp.json = {"error": "Unable to create session"}
+				resp.data = str.encode(json.dumps({"error": "Unable to create session"}))
 				resp.status = falcon.HTTP_722
 			else:
 				result = self.guilds.find_one_and_update({'_id': ObjectId(ugid)}, {"$push": {"future_sessions": {'usid': session_id, 'ts': when}}}, return_document=ReturnDocument.AFTER)
 
-				resp.json = {"future_sessions": result.get("future_sessions")}
+				resp.data = str.encode(json.dumps({"future_sessions": result.get("future_sessions")}))
 				resp.status = falcon.HTTP_202
 		else:
-			resp.json = {"error": "Invalid ts format for 'when', should be 'DD-MM-YY HH24:MI'"}
+			resp.data = str.encode(json.dumps({"error": "Invalid ts format for 'when', should be 'DD-MM-YY HH24:MI'"}))
 			resp.status = falcon.HTTP_723
 
 #TODO Garuantee that user is admin of guild
@@ -425,13 +573,29 @@ class UpdateSession(object):
 
 		found_session = GuildHasSession(ugid, usid, self.guilds, just_future=True)
 		if not found_session:
-			resp.json = {'error': 'Session not found in guilds sessions'}
-			resp.status = falcon.HTTP
+			resp.data = str.encode(json.dump({'error': 'Session not found in guilds sessions'}))
+			resp.status = falcon.HTTP_410
 			return
 
-		game = req.get_json('game', dtype=str, default=None)
-		time = req.get_json('start', dtype=str, default=None)
-		notes = req.get_json('notes', dtype=str, default=None)
+		params = req.json
+
+		game = params.get('game')
+		start_string = params.get('start')
+		notes = params.get('notes')
+		start = None
+
+		if game =="":
+			game = None
+		if string =="":
+			None
+		else:
+			start = util.RfgStrptime(start_string)
+			if start is None:
+				resp.data = str.encode(json.dumps({'error': 'Improper ts format'}))
+				resp.status = falcon.HTTP_400
+				return
+		if notes =="":
+			None
 
 		result = self.session.UpdateSession(game, time, notes, usid)
 
@@ -439,12 +603,12 @@ class UpdateSession(object):
 			resp.json = {"error": "Unable to update the session"}
 			resp.status = falcon.HTTP_500
 		else:
-			resp.json = {
+			resp.data = str.encode(json.dumps({
 				"usid": "{}".format(result.get('_id')),
 				"game": result.get('game'),
 				"start": result.get('start'),
 				"notes": result.get('notes')
-			}
+			}))
 			resp.status = falon.HTTP_202
 
 class Session(object):
@@ -458,19 +622,19 @@ class Session(object):
 		if found_session:
 			session = self.session.GetSession(usid)
 			if session is not None:
-				resp.json = {
+				resp.data = str.encode(json.dumps({
 					'usid': session.get('_id'),
 					'game': session.get('game'),
 					'start': session.get('start'),
 					'notes': session.get('notes')
-				}
+				}))
 				resp.status = falcon.HTTP_200
 			else:
 				#TODO Log this shit
-				resp.json = {'error': 'Session belongs to guild, but could not be found in database of sessions.'}
+				resp.data = str.encode(json.dumps({'error': 'Session belongs to guild, but could not be found in database of sessions.'}))
 				resp.status = falcon.HTTP_744
 		else:
-			resp.json = {'error': 'Session identifier does not belong to guild referenced.'}
+			resp.json =str.encode(json.dumps({'error': 'Session identifier does not belong to guild referenced.'}))
 			resp.status = falcon.HTTP_409
 
 	#TODO Garuantee that user is admin of guild
@@ -481,14 +645,14 @@ class Session(object):
 			delete_success = self.session.DeleteSession(usid)
 
 			if delete_success:
-				resp.json = {'success': 'Deleted session!'}
+				resp.data = str.encode(json.dumps({'success': 'Deleted session!'}))
 				resp.status = falcon.HTTP_202
 			else:
 				#TODO Log this shit
-				resp.json = {'error': 'Session belongs to guild, but we were unable to delete it.'}
+				resp.data = str.encode(json.dumps({'error': 'Session belongs to guild, but we were unable to delete it.'}))
 				resp.status = falcon.HTTP_744
 		else:
-			resp.json = {'error': 'Session identifier does not belong to guild referenced.'}
+			resp.data = str.encode(json.dumps({'error': 'Session identifier does not belong to guild referenced.'}))
 			resp.status = falcon.HTTP_409
 
 class Sessions(object):
@@ -513,7 +677,7 @@ class Sessions(object):
 			if full_session:
 				ps_big.append(full_session)
 
-		resp.json = {'future_sessions': fs_big, 'previous_sessions': ps_big}
+		resp.data = str.encode(json.dumps({'future_sessions': fs_big, 'previous_sessions': ps_big}))
 		resp.status = falcon.HTTP_200
 
 class NextSession(object):
@@ -530,12 +694,12 @@ class NextSession(object):
 
 		next_session = self.session.GetSession(sessions[0].get('usid'))
 
-		resp.json = {
+		resp.data = str.encode(json.dumps({
 			'usid': "%s".format(next_session.get('_id')),
 			'game': next_session.get('game'),
 			'start': next_session.get('start'),
 			'notes': next_session.get('notes')
-		}
+		}))
 		resp.status = falcon.HTTP_200
 
 # If you set both just_future and just_previoust to True, you will automatically get False, don't be stupid.
