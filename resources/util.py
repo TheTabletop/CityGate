@@ -7,3 +7,6 @@ def RfgStrptime(ts_string):
     except ValueError:
         pass
     return ts
+
+def RfgKeyEncrypt(key):
+    return hashlib.sha224(key.encode('utf-8')).hexdigest()

@@ -11,6 +11,7 @@ import json
 import hashlib
 
 import resources.pigeoncoop as pcoop
+import resources.util as util
 
 #ALLOWED_IMAGE_TYPES = (
 #    'image/gif',
@@ -28,6 +29,7 @@ class NewHero(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
 		self.heros = self.db.heros
+		self.emails = self.db.emails
 		self.coop = pcoop.Coop(db_reference)
 
 	def on_post(self, req, resp):
@@ -63,6 +65,12 @@ class NewHero(object):
 		if backstory is None:
 			backstory = ""
 
+		try:
+			self.emails.insert_one({'_id': email, 'hero': None})
+		except Exception as e:
+			resp.data = str.encode(json.dumps({'error': 'Hero with %s alread exists'.format(email)}))
+			resp.status = falcon.HTTP_409
+			return
 		heroObject = self.heros.insert_one(
 			{
 				"email": email,
@@ -70,7 +78,7 @@ class NewHero(object):
 				"heroname": heroname,
 				"games": games,
 				"backstory": backstory,
-				"key": hashlib.sha224(key.encode('utf-8')).hexdigest(),
+				"key": util.RfgKeyEncrypt(key),
 				"companions": [],
 				"guild_invites": [],
 				"requested_guilds": [],
@@ -80,6 +88,7 @@ class NewHero(object):
 				"location": "",
 				"address": "",
 			})
+		self.emails.update_one({'_id': ObjectId(email)}, {'$set': {'hero': heroObject.inserted_id}})
 		self.heros.update_one({'_id': ObjectId(heroObject.inserted_id)}, {'$set': {'ucid': self.coop.create(heroObject.inserted_id)}})
 		resp.data = str.encode(json.dumps({"success": "Created a hero.", "uhid":"{}".format(heroObject.inserted_id)}))
 		resp.status = falcon.HTTP_201
@@ -256,20 +265,41 @@ class Email(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
 		self.heros = self.db.heros
+		self.emails = self.db.emails
 
 	def on_post(self, req, resp, uhid):
 		params = req.json
 
-		email = params.get('email')
-		if hname is None:
+		#check to make sure they provided a new email
+		newemail = params.get('email')
+		if newemail is None:
 			resp.data = str.encode(json.dumps({'error': 'no email key in json provided'}))
 			resp.status = falcon.HTTP_400
 			return
 
-		result = self.heros.find_one_and_update({'_id': ObjectId(uhid)}, {'$set': {'email': email}}, return_document=ReturnDocument.AFTER)
+		#make sure the hero of the uhid exists
+		heroObject = self.heros.find_one({'_id': ObjectId(uhid)}, projection = ['email'])
+		if heroObject is None:
+			resp.data = str.encode(json.dumps({'error': 'Invalid hero id, was not found'}))
+			resp.status = falcon.HTTP_410
+		oldemail = heroObject.get('email')
+
+		#try and insert the new email into the email Collection
+		#if it already exists, it will throw an exception
+		try:
+			self.emails.insert_one({'_id': newemail, 'uhid': uhid})
+		except:
+			resp.data = str.encode(json.dumps({'error': 'Emails already belongs to another hero.'}))
+			resp.status = falcon.HTTP_409
+
+		#update the hero with the new email
+		updatedHeroObject = self.heros.find_one_and_update({'_id': ObjectId(uhid)}, {'$set': {'email': email}}, return_document=ReturnDocument.AFTER)
 
 		if result is not None:
-			resp.data = str.encode(json.dumps({'uhid': "%s".format(result.get('_id')), 'email': result.get('email')}))
+			#remove the old email from the email Collection
+			self.emails.delete_one({'_id': oldemail})
+
+			resp.data = str.encode(json.dumps({'uhid': "%s".format(updatedHeroObject.get('_id')), 'email': updatedHeroObject.get('email')}))
 			resp.status = falcon.HTTP_202
 		else:
 			resp.data = str.encode(json.dumps({"error": "Was unable to update hero's email"}))
@@ -327,8 +357,8 @@ class Key(object):
 			resp.status = falcon.HTTP_400
 			return
 		result = self.heros.find_one({"_id": ObjectId(uhid)}, projection=['key'])
-		if result.get("key") == hashlib.sha224(oldkey).hexdigest():
-			result = self.heros.update_one({'_id': ObjectId(uhid)}, {'$set': {'key': hashlib.sha224(newkey.hexdigest())}})
+		if result.get("key") == util.RfgKeyEncrypt(oldkey):
+			result = self.heros.update_one({'_id': ObjectId(uhid)}, {'$set': {'key': util.RfgKeyEncrypt(newkey)}})
 			if result.modified_count == 1:
 				resp.data = str.encode(json.dumps({"success": "Successfully updated hero's key"}))
 				resp.status = falcon.HTTP_202
