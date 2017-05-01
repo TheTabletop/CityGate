@@ -27,7 +27,6 @@ source activate rfg-api
 conda install pip
 pip install falcon
 pip install bson
-pip install ipython
 pip install pymongo
 pip install gunicorn
 pip install requests
