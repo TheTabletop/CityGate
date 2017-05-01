@@ -325,8 +325,8 @@ class Companions(object):
 		result = self.heros.find_one({"_id": ObjectId(uhid)}, projection=['companions'])
 
 		if result is None:
-			resp.data = msgpack.packb({"Failure": "Hero not found"})
-			resp.status = falcon.HTTP_404
+			resp.data = str.encode(json.dumps({"error": "Hero not found"}))
+			resp.status = falcon.HTTP_410
 		else:
 			companions = result.get('companions')
 			data = []

@@ -1,6 +1,5 @@
 import falcon
 import falcon_jsonify
-import msgpack
 import json
 import resources.hero as hero
 import resources.guild as guild

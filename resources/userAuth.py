@@ -8,7 +8,6 @@ from bson import ObjectId
 
 import falcon
 import json
-import msgpack
 import resources.util
 
 class Login(object):

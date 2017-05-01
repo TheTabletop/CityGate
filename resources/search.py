@@ -7,7 +7,6 @@ from bson import ObjectId
 
 import falcon
 import json
-import msgpack
 
 class AllHeros(object):
 	def __init__(self, db_reference):
@@ -17,7 +16,7 @@ class AllHeros(object):
 	def on_get (self, req, resp):
 		result = self.heros.find()
 
-		resp.data = msgpack.packb(json.dumps(result))
+		resp.data = str.encode(json.dumps(result))
 		resp.status = falcon.HTTP_200
 
 class AllGuilds(object):
@@ -28,5 +27,5 @@ class AllGuilds(object):
 	def on_get (self, req, resp):
 		result = self.guilds.find()
 
-		resp.data = msgpack.packb(json.dumps(result))
+		resp.data = str.encode(json.dumps(result))
 		resp.status = falcon.HTTP_200
