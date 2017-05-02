@@ -1,4 +1,5 @@
 import datetime
+import hashlib
 
 def RfgStrptime(ts_string):
     ts = None

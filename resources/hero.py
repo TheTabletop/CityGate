@@ -8,7 +8,6 @@ from bson import ObjectId
 
 import falcon
 import json
-import hashlib
 
 import resources.pigeoncoop as pcoop
 import resources.util as util
@@ -88,7 +87,7 @@ class NewHero(object):
 				"location": "",
 				"address": "",
 			})
-		self.emails.update_one({'_id': ObjectId(email)}, {'$set': {'hero': heroObject.inserted_id}})
+		self.emails.update_one({'_id': email}, {'$set': {'hero': heroObject.inserted_id}})
 		self.heros.update_one({'_id': ObjectId(heroObject.inserted_id)}, {'$set': {'ucid': self.coop.create(heroObject.inserted_id)}})
 		resp.data = str.encode(json.dumps({"success": "Created a hero.", "uhid":"{}".format(heroObject.inserted_id)}))
 		resp.status = falcon.HTTP_201
