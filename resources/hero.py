@@ -394,7 +394,7 @@ class ForgeKey(object):
 			return
 		else:
 			uhid = forgeToken.get('uhid')
-			result = self.heros.update_one({'_id': ObjectId(uhid)}, {'$set': {'key': hashlib.sha224(newkey.hexdigest())}})
+			result = self.heros.update_one({'_id': ObjectId(uhid)}, {'$set': {'key': util.RfgKeyEncrypt(newkey)}})
 			if result.modified_count == 1:
 				resp.data = str.encode(json.dumps({"success": "Successfully forged a new key"}))
 				resp.status = falcon.HTTP_202
