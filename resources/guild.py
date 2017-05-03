@@ -74,6 +74,8 @@ class FormGuild(object):
 				"invited_heros": []
 			})
 
+		self.heros.update_one({'_id': ObjectId(creator)}, {'$push': {'guilds'}})
+
 		resp.data = str.encode(json.dumps({"success": "Successfully formed new guild", 'ugid': str(result.inserted_id)}))
 		resp.status = falcon.HTTP_201
 
@@ -339,15 +341,15 @@ class RequestToJoinGuild(object):
 		self.heros = self.db.heros
 
 	def on_post(self, req, resp, ugid, uhid):
-		self.heros.update_one({'_id': ObjectId(uhid)}, {'$push': {'requested_guilds': ObjectId(ugid)}})
-		self.guilds.update_one({'_id': ObjectId(ugid)}, {'$push': {'hero_requests': ObjectId(uhid)}})
+		self.heros.update_one({'_id': ObjectId(uhid)}, {'$push': {'requested_guilds': ugid}})
+		self.guilds.update_one({'_id': ObjectId(ugid)}, {'$push': {'hero_requests': uhid)}})
 
 		resp.data = str.encode(json.dumps({'success': 'Invited hero.'}))
 		resp.status = falcon.HTTP_202
 
 	def on_delete(self, req, resp, ugid, uhid):
-		self.heros.update_one({'_id': ObjectId(uhid)}, {'$pull': {'requested_guilds': ObjectId(ugid)}})
-		self.guilds.update_one({'_id': ObjectId(ugid)}, {'$pull': {'hero_requests': ObjectId(uhid)}})
+		self.heros.update_one({'_id': ObjectId(uhid)}, {'$pull': {'requested_guilds': ugid}})
+		self.guilds.update_one({'_id': ObjectId(ugid)}, {'$pull': {'hero_requests': uhid}})
 
 		resp.data = str.encode(json.dumps({'success': 'Uninvited hero.'}))
 		resp.status = falcon.HTTP_202
@@ -370,12 +372,12 @@ class RespondToHeroRequest(object):
 
 		data = None
 		if accept:
-			self.guilds.update_one({'_id': ObjectId(ugid)}, {'$pull': {'invited_heros': ObjectId(uhid)}, '$push': {'membsers': ObjectId(uhid)}})
-			self.heros.update_one({'_id': ObjectId(uhid)}, {'$pull': {'guild_invites': ObjectId(ugid)}, '$push': {'guilds': ObjectId(ugid)}})
+			self.guilds.update_one({'_id': ObjectId(ugid)}, {'$pull': {'invited_heros': uhid}, '$push': {'members': {'uhid': uhid, 'admin': False}}})
+			self.heros.update_one({'_id': ObjectId(uhid)}, {'$pull': {'guild_invites': ugid}, '$push': {'guilds': {'ugid': ugid, 'admin': False}}})
 			data = {"Success": "Acknowledged acceptance of inivte"}
 		else:
-			self.guilds.update_one({'_id': ObjectId(ugid)}, {'$pull': {'invited_heros': ObjectId(uhid)}})
-			self.heros.update_one({'_id': ObjectId(uhid)}, {'$pull': {'guild_invites': ObjectId(ugid)}})
+			self.guilds.update_one({'_id': ObjectId(ugid)}, {'$pull': {'invited_heros': uhid}})
+			self.heros.update_one({'_id': ObjectId(uhid)}, {'$pull': {'guild_invites': ugid}})
 			data = {"Success": "Acknowledged decline of invite"}
 
 		resp.data = str.encode(json.dumps(data))
@@ -388,15 +390,15 @@ class InviteHeroToJoin(object):
 		self.heros = self.db.heros
 
 	def on_post(self, req, resp, ugid, uhid):
-		self.heros.update_one({'_id': ObjectId(uhid)}, {'$push': {'guild_invites': ObjectId(ugid)}})
-		self.guilds.update_one({'_id': ObjectId(ugid)}, {'$push': {'invited_heros': ObjectId(uhid)}})
+		self.heros.update_one({'_id': ObjectId(uhid)}, {'$push': {'guild_invites': ugid}})
+		self.guilds.update_one({'_id': ObjectId(ugid)}, {'$push': {'invited_heros': uhid}})
 
 		resp.data = str.encode(json.dumps({'success': 'Invited user'}))
 		resp.status = falcon.HTTP_202
 
 	def on_delete(self, req, resp, ugid, uhid):
-		self.heros.update_one({'_id': ObjectId(uhid)}, {'$pull': {'guild_invites': ObjectId(ugid)}})
-		self.guilds.update_one({'_id': ObjectId(ugid)}, {'$pull': {'invited_heros': ObjectId(uhid)}})
+		self.heros.update_one({'_id': ObjectId(uhid)}, {'$pull': {'guild_invites':ugid}})
+		self.guilds.update_one({'_id': ObjectId(ugid)}, {'$pull': {'invited_heros': uhid}})
 
 		resp.data = str.encode(json.dumps({'Success': 'Uninvited user'}))
 		resp.status = falcon.HTTP_202
@@ -419,8 +421,8 @@ class RespondToGuildInvite(object):
 
 		data = None
 		if accept:
-			self.guilds.update_one({'_id': ObjectId(ugid)}, {'$pull': {'invited_heros': ObjectId(uhid)}, '$push': {'membsers': ObjectId(uhid)}})
-			self.heros.update_one({'_id': ObjectId(uhid)}, {'$pull': {'guild_invites': ObjectId(ugid)}, '$push': {'guilds': ObjectId(ugid)}})
+			self.guilds.update_one({'_id': ObjectId(ugid)}, {'$pull': {'invited_heros': ObjectId(uhid)}, '$push': {'membsers': {'uhid': uhid, 'admin': False}}})
+			self.heros.update_one({'_id': ObjectId(uhid)}, {'$pull': {'guild_invites': ObjectId(ugid)}, '$push': {'guilds': {'ugid': ugid, 'admin': False}}})
 			data = {"success": "Acknowledged acceptance of inivte"}
 		else:
 			self.guilds.update_one({'_id': ObjectId(ugid)}, {'$pull': {'invited_heros': ObjectId(uhid)}})

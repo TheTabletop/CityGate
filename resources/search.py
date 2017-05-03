@@ -18,6 +18,7 @@ class AllHeros(object):
 		result = self.heros.find()
 		heros = []
 		distance = 0.0
+		random.seed(1337)
 
 		for i in range(0, result.count()):
 			temp = {}
@@ -26,7 +27,7 @@ class AllHeros(object):
 			temp['heroname'] = result[i].get('heroname')
 			temp['games'] = result[i].get('games')
 			heros.append(temp)
-			distance = (random.randint(0,1) * i) + random.random()
+			distance += (random.randint(0,1) * i) + random.random()
 			temp['distance'] = distance
 
 		resp.data = str.encode(json.dumps(heros))
@@ -42,6 +43,7 @@ class AllGuilds(object):
 		result = self.guilds.find()
 		guilds = []
 		distance = 0.0
+		random.seed(1337)
 
 		for i in range(0, result.count()):
 			temp = {}
@@ -53,10 +55,10 @@ class AllGuilds(object):
 			temp['members'] = []
 			for member in members:
 				uhid = member.get('uhid')
-				hero = self.heros.finde_one({'_id': ObjectId(uhid)})
+				hero = self.heros.find_one({'_id': ObjectId(uhid)})
 				if hero is not None:
 					temp['members'].append({'uhid': uhid, 'playername': hero.get('playername'), 'heroname': hero.get('heroname')})
-			distance = (random.randint(0,1) * i) + random.random()
+			distance += (random.randint(0,1) * i) + random.random()
 			temp['distance'] = distance
 			guilds.append(temp)
 
