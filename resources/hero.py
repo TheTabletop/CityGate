@@ -76,6 +76,7 @@ class NewHero(object):
 				"playername": playername,
 				"heroname": heroname,
 				"games": games,
+				"guilds": [],
 				"backstory": backstory,
 				"key": util.RfgKeyEncrypt(key),
 				"companions": [],
@@ -158,7 +159,8 @@ class Hero(object):
 			"companion_requests": result.get('companion_requests'),
 			"ucid": result.get('ucid'),
 			"location": result.get('location'),
-			"address": result.get('address')
+			"address": result.get('address'),
+			'guilds': result.get('guilds')
 		}
 		resp.data = str.encode(json.dumps(data))
 		resp.status = falcon.HTTP_202
@@ -187,7 +189,8 @@ class Hero(object):
 			"companion_requests": result.get('companion_requests'),
 			"ucid": result.get('ucid'),
 			"location": result.get('location'),
-			"address": result.get('address')
+			"address": result.get('address'),
+			'guilds': result.get('guilds')
 		}
 
 		resp.data = str.encode(json.dumps(data))
@@ -315,6 +318,34 @@ class Email(object):
 			email = result.get('email')
 			resp.data = str.encode(json.dumps({'uhid': result.get('_id'), "email": email}))
 			resp.status = falcon.HTTP_200
+
+class Guilds(object):
+	def __init__(self, db_reference):
+		self.db = db_reference
+		self.heros = self.db.heros
+		self.guilds = self.db.guilds
+
+	def on_get(self, req, resp):
+		result = self.heros.find_one({"_id": ObjectId(uhid)}, projection=['guilds'])
+
+		if result is None:
+			resp.data = str.encode(json.dumps({"error": "Hero not found"}))
+			resp.status = falcon.HTTP_410
+			return
+
+		data = []
+		guilds = result.get('guilds')
+		for guild in guilds:
+			gObj = self.guilds.find_one({'_id': ObjectId(temp['ugid'])}, projection=['guildname'])
+			if guild is not None:
+				temp = {}
+				temp['ugid'] = guild.get('ugid')
+				temp['admin'] = guild.get('admin')
+				temp['guildname'] = gObj.get('guildname')
+				data.append(temp)
+
+		resp.data = str.encode(json.dumps({'uhid': str(result.get('_id')), 'guilds': data}))
+		resp.status = falcon.HTTP_200
 
 class Companions(object):
 	def __init__(self, db_reference):
