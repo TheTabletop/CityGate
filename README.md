@@ -27,12 +27,11 @@ source activate rfg-api
 conda install pip
 pip install falcon
 pip install bson
-pip install ipython
 pip install pymongo
 pip install gunicorn
-pip install httpie
-pip install msgpack-python
+pip install requests
 pip install falcon-jsonify
+pip install falcon-cors
 ```
 You also need to make sure you have a running instance of mongodb, to get this set up, please follow the directions [here](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/).
 

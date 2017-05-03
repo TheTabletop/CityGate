@@ -1,4 +1,5 @@
 import datetime
+from passlib.hash import pbkdf2_sha256
 
 def RfgStrptime(ts_string):
     ts = None
@@ -9,4 +10,7 @@ def RfgStrptime(ts_string):
     return ts
 
 def RfgKeyEncrypt(key):
-    return hashlib.sha224(key.encode('utf-8')).hexdigest()
+    return pbkdf2_sha256.encrypt(key, rounds=200000, salt_size=16)
+
+def RfgKeyVerify(key, hashed):
+    return pbkdf2_sha256.verify(key, hashed)

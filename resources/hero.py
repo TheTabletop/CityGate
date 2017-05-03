@@ -8,7 +8,6 @@ from bson import ObjectId
 
 import falcon
 import json
-import hashlib
 
 import resources.pigeoncoop as pcoop
 import resources.util as util
@@ -66,7 +65,7 @@ class NewHero(object):
 			backstory = ""
 
 		try:
-			self.emails.insert_one({'_id': email, 'hero': None})
+			self.emails.insert_one({'_id': email, 'uhid': None})
 		except Exception as e:
 			resp.data = str.encode(json.dumps({'error': 'Hero with %s alread exists'.format(email)}))
 			resp.status = falcon.HTTP_409
@@ -88,9 +87,10 @@ class NewHero(object):
 				"location": "",
 				"address": "",
 			})
-		self.emails.update_one({'_id': ObjectId(email)}, {'$set': {'hero': heroObject.inserted_id}})
-		self.heros.update_one({'_id': ObjectId(heroObject.inserted_id)}, {'$set': {'ucid': self.coop.create(heroObject.inserted_id)}})
-		resp.data = str.encode(json.dumps({"success": "Created a hero.", "uhid":"{}".format(heroObject.inserted_id)}))
+		uhid = str(heroObject.inserted_id)
+		self.emails.update_one({'_id': email}, {'$set': {'uhid': uhid}})
+		self.heros.update_one({'_id': heroObject.inserted_id}, {'$set': {'ucid': str(self.coop.create(heroObject.inserted_id))}})
+		resp.data = str.encode(json.dumps({"success": "Created a hero.", "uhid": str(heroObject.inserted_id)}))
 		resp.status = falcon.HTTP_201
 
 class Hero(object):
@@ -145,7 +145,7 @@ class Hero(object):
 		result = self.heros.find_one_and_update({'_id': ObjectId(uhid)}, myDict, return_document=ReturnDocument.AFTER)
 
 		data = {
-			'uhid': "%s".format(result.get('_id')),
+			'uhid': str(result.get('_id')),
 			'email': result.get('email'),
 			'playername': result.get('playername'),
 			'heroname': result.get('heroname'),
@@ -174,7 +174,7 @@ class Hero(object):
 			returns
 
 		data = {
-			'uhid': "%s".format(result.get('_id')),
+			'uhid': str(result.get('_id')),
 			'email': result.get('email'),
 			'playername': result.get('playername'),
 			'heroname': result.get('heroname'),
@@ -210,7 +210,7 @@ class PlayerName(object):
 		result = self.heros.find_one_and_update({'_id': ObjectId(uhid)}, {'$set': {'playername': pname}}, return_document=ReturnDocument.AFTER)
 
 		if result is not None:
-			resp.data = str.encode(json.dumps({"uhid": "%s".format(result.get('_id')), 'playername': result.get('playername')}))
+			resp.data = str.encode(json.dumps({"uhid": str(result.get('_id')), 'playername': result.get('playername')}))
 			resp.status = falcon.HTTP_202
 		else:
 			resp.data = str.encode(json.dumps({"error": "Was unable to update hero's player name"}))
@@ -224,7 +224,7 @@ class PlayerName(object):
 			resp.status = falcon.HTTP_404
 		else:
 			pname = result.get('playername')
-			resp.data = str.encode(json.dumps({"uhid": "%s".format(result.get('_id')), "playername": pname}))
+			resp.data = str.encode(json.dumps({"uhid": str(result.get('_id')), "playername": pname}))
 			resp.status = falcon.HTTP_200
 
 class HeroName(object):
@@ -244,7 +244,7 @@ class HeroName(object):
 		result = self.heros.find_one_and_update({'_id': ObjectId(uhid)}, {'$set': {'heroname': hname}}, return_document=ReturnDocument.AFTER)
 
 		if result is not None:
-			resp.data = str.encode(json.dumps({'uhid': "%s".format(result.get('_id')), 'heroname': result.get('heroname')}))
+			resp.data = str.encode(json.dumps({'uhid': str(result.get('_id')), 'heroname': result.get('heroname')}))
 			resp.status = falcon.HTTP_202
 		else:
 			resp.data = str.encode(json.dumps({"error": "Was unable to update hero's name"}))
@@ -258,7 +258,7 @@ class HeroName(object):
 			resp.status = falcon.HTTP_404
 		else:
 			hname = result.get('heroname')
-			resp.data = str.encode(json.dumps({'uhid': "%s".format(result.get('_id')), "heroname": hname}))
+			resp.data = str.encode(json.dumps({'uhid': str(result.get('_id')), "heroname": hname}))
 			resp.status = falcon.HTTP_200
 
 class Email(object):
@@ -299,7 +299,7 @@ class Email(object):
 			#remove the old email from the email Collection
 			self.emails.delete_one({'_id': oldemail})
 
-			resp.data = str.encode(json.dumps({'uhid': "%s".format(updatedHeroObject.get('_id')), 'email': updatedHeroObject.get('email')}))
+			resp.data = str.encode(json.dumps({'uhid': str(updatedHeroObject.get('_id')), 'email': updatedHeroObject.get('email')}))
 			resp.status = falcon.HTTP_202
 		else:
 			resp.data = str.encode(json.dumps({"error": "Was unable to update hero's email"}))
@@ -325,8 +325,8 @@ class Companions(object):
 		result = self.heros.find_one({"_id": ObjectId(uhid)}, projection=['companions'])
 
 		if result is None:
-			resp.data = msgpack.packb({"Failure": "Hero not found"})
-			resp.status = falcon.HTTP_404
+			resp.data = str.encode(json.dumps({"error": "Hero not found"}))
+			resp.status = falcon.HTTP_410
 		else:
 			companions = result.get('companions')
 			data = []
@@ -395,7 +395,7 @@ class ForgeKey(object):
 			return
 		else:
 			uhid = forgeToken.get('uhid')
-			result = self.heros.update_one({'_id': ObjectId(uhid)}, {'$set': {'key': hashlib.sha224(newkey.hexdigest())}})
+			result = self.heros.update_one({'_id': ObjectId(uhid)}, {'$set': {'key': util.RfgKeyEncrypt(newkey)}})
 			if result.modified_count == 1:
 				resp.data = str.encode(json.dumps({"success": "Successfully forged a new key"}))
 				resp.status = falcon.HTTP_202
@@ -439,7 +439,7 @@ class CommissionKey(object):
 		else:
 			self.forgeCommissions.remove({'user': user})
 			result = self.forgeCommissions.insert_one({'user': user})
-			uiid = "{}".format(result['inserted_id'])
+			uiid = str(result.get('inserted_id'))
 			resp.data = str.encode(json.dumps({'success': 'an email has been sent'}))
 			resp.status = falcon.HTTP_202
 			#TODO email link
