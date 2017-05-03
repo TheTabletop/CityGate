@@ -32,10 +32,10 @@ class NewPigeon(object):
 				})
 
 			if createResult is not None:
-				coop.Pigeons.add_pigeon(ucid, createResult.inserted_id, True)
+				coop.Pigeons.add_pigeon(ucid, str(createResult.inserted_id), True)
 
 				for uhid in toUpdate:
-					coop.Pigeons.add_pigeon(uhid, createResult.inserted_id, False)
+					coop.Pigeons.add_pigeon(uhid, str(createResult.inserted_id), False)
 			else:
 				resp.data = str.encode(json.dumps({"Error": "Unable to create message"}))
 				resp.status = falcon.HTTP_500
@@ -108,7 +108,7 @@ class Messages(object):
 				resp.status = falcon.HTTP_500
 				return
 
-			resp.data = str.encode(json.dumps({'upid': "%s".format(result.get('_id')), 'participants': result.get('participants'), 'messages': result.get('messages')}))
+			resp.data = str.encode(json.dumps({'upid': str(result.get('_id')), 'participants': result.get('participants'), 'messages': result.get('messages')}))
 
 			#TODO notify recipients
 

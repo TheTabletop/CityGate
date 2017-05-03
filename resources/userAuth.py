@@ -8,7 +8,7 @@ from bson import ObjectId
 
 import falcon
 import json
-import resources.util
+import resources.util as util
 
 class Login(object):
 
@@ -50,7 +50,7 @@ class Login(object):
 				"uhid": req.get_param('uhid'),
 				"expires": datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
 			 })
-		resp.data = str.encode(json.dumps({'usid': result.inserted_id, 'uhid': emailHeroObject.get('uhid')}))
+		resp.data = str.encode(json.dumps({'usid': str(result.inserted_id), 'uhid': str(emailHeroObject.get('uhid'))}))
 		resp.status = falcon.HTTP_202
 
 class updateExpire(object):

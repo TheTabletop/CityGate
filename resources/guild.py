@@ -74,7 +74,7 @@ class FormGuild(object):
 				"invited_heros": []
 			})
 
-		resp.data = str.encode(json.dumps({"success": "Successfully formed new guild", 'ugid': "%s".format(result.inserted_id)}))
+		resp.data = str.encode(json.dumps({"success": "Successfully formed new guild", 'ugid': str(result.inserted_id)}))
 		resp.status = falcon.HTTP_201
 
 class Guild(object):
@@ -91,7 +91,7 @@ class Guild(object):
 			return
 		else:
 			resp.data = str.encode(json.dumps({
-				'ugid': "%s".format(result.get('_id')),
+				'ugid': str(result.get('_id')),
 				'guildname': result.get('guildname'),
 				'charter': result.get('charter'),
 				'address': result.get('address'),
@@ -144,7 +144,7 @@ class Name(object):
 			resp.status = falcon.HTTP_410
 			return
 
-		resp.data = str.encode(json.dumps({'uhid': "%s".format(result.get('_id')), 'guildname': result.get('guildname')}))
+		resp.data = str.encode(json.dumps({'uhid': str(result.get('_id')), 'guildname': result.get('guildname')}))
 		resp.status = falcon.HTTP_200
 
 	def on_post(self, req, resp, ugid):
@@ -163,7 +163,7 @@ class Name(object):
 			resp.status = falcon.HTTP_500
 			return
 
-		resp.data = str.encode(json.dumps({'ugid': "%s".format(result.get('_id')), 'guildname': result.get('guildname')}))
+		resp.data = str.encode(json.dumps({'ugid': str(result.get('_id')), 'guildname': result.get('guildname')}))
 		resp.status = falcon.HTTP_202
 
 class Charter(object):
@@ -179,7 +179,7 @@ class Charter(object):
 			resp.status = falcon.HTTP_410
 			return
 
-		resp.data = str.encode(json.dumps({'uhid': "%s".format(result.get('_id')), 'charter': result.get('charter')}))
+		resp.data = str.encode(json.dumps({'uhid': str(result.get('_id')), 'charter': result.get('charter')}))
 		resp.status = falcon.HTTP_200
 
 	def on_post(self, req, resp, ugid):
@@ -198,7 +198,7 @@ class Charter(object):
 			resp.status = falcon.HTTP_500
 			return
 
-		resp.data = str.encode(json.dumps({'ugid': "%s".format(result.get('_id')), 'charter': result.get('charter')}))
+		resp.data = str.encode(json.dumps({'ugid': str(result.get('_id')), 'charter': result.get('charter')}))
 		resp.status = falcon.HTTP_202
 
 class Location(object):
@@ -214,7 +214,7 @@ class Location(object):
 			resp.status = falcon.HTTP_410
 			return
 
-		resp.data = str.encode(json.dumps({'uhid': "%s".format(result.get('_id')), 'address': result.get('address')}))
+		resp.data = str.encode(json.dumps({'uhid': str(result.get('_id')), 'address': result.get('address')}))
 		resp.status = falcon.HTTP_200
 
 	def on_post(self, req, resp, ugid):
@@ -238,7 +238,7 @@ class Location(object):
 			resp.status = falcon.HTTP_500
 			return
 
-		resp.data = str.encode(json.dumps({'ugid': "%s".format(result.get('_id')), 'address': result.get('address')}))
+		resp.data = str.encode(json.dumps({'ugid': str(result.get('_id')), 'address': result.get('address')}))
 		resp.status = falcon.HTTP_202
 
 class Games(object):
@@ -254,7 +254,7 @@ class Games(object):
 			resp.status = falcon.HTTP_410
 			return
 
-		resp.data = str.encode(json.dumps({'ugid': "%s".format(result.get('_id')), 'games': result.get('games')}))
+		resp.data = str.encode(json.dumps({'ugid': str(result.get('_id')), 'games': result.get('games')}))
 		resp.status = falcon.HTTP_200
 
 	def on_post(self, req, resp, ugid):
@@ -276,7 +276,7 @@ class Games(object):
 			resp.status = falcon.HTTP_500
 			return
 
-		resp.data = str.encode(json.dumps({'ugid': "%s".format(result.get('_id')), 'games': result.get('games')}))
+		resp.data = str.encode(json.dumps({'ugid': str(result.get('_id')), 'games': result.get('games')}))
 		resp.status = falcon.HTTP_202
 
 	#Deprecated
@@ -304,7 +304,7 @@ class Members(object):
 			hero = self.heros.find_one({'_id': ObjectId(member.get('uhid'))}, projection = ['heroname', 'playername'])
 			party.append({'uhid': member.get('uhid'), 'admin': member.get('admin'), 'heroname': hero.get('heroname'), 'playername': hero.get('playername')})
 
-		resp.data = str.encode(json.dumps({'ugid': "%s".format(result.get('_id')), 'members': party}))
+		resp.data = str.encode(json.dumps({'ugid': str(result.get('_id')), 'members': party}))
 		resp.status = falcon.HTTP_200
 
 	#TODO make sure user deleting another user has access
@@ -329,7 +329,7 @@ class Members(object):
 			hero = self.heros.find_one({'_id': ObjectId(member.get('uhid'))}, projection = ['heroname', 'playername'])
 			party.append({'uhid': member.get('uhid'), 'admin': member.get('admin'), 'heroname': hero.get('heroname'), 'playername': hero.get('playername')})
 
-		resp.data = str.encode(json.dumps({'ugid': "%s".format(result.get('_id')), 'members': party}))
+		resp.data = str.encode(json.dumps({'ugid': str(result.get('_id')), 'members': party}))
 		resp.status = falcon.HTTP_202
 
 class RequestToJoinGuild(object):
@@ -502,7 +502,7 @@ class Requests(object):
 			resp.status = falcon.HTTP_410
 			return
 
-		resp.data = str.encode(json.dumps({'ugid': "%s".format(result.get('_id')), "hero_requests": result.get("hero_requests")}))
+		resp.data = str.encode(json.dumps({'ugid': str(result.get('_id')), "hero_requests": result.get("hero_requests")}))
 		resp.status = falcon.HTTP_200
 
 class Invites(object):
@@ -518,7 +518,7 @@ class Invites(object):
 			resp.status = falcon.HTTP_410
 			return
 
-		resp.data = str.encode(json.dumps({'ugid': "%s".format(result.get('_id')), "invited_heros": result.get("invited_heros")}))
+		resp.data = str.encode(json.dumps({'ugid': str(result.get('_id')), "invited_heros": result.get("invited_heros")}))
 		resp.status = falcon.HTTP_200
 
 #TODO Garuantee that user is admin of guild
@@ -695,7 +695,7 @@ class NextSession(object):
 		next_session = self.session.GetSession(sessions[0].get('usid'))
 
 		resp.data = str.encode(json.dumps({
-			'usid': "%s".format(next_session.get('_id')),
+			'usid': str(next_session.get('_id')),
 			'game': next_session.get('game'),
 			'start': next_session.get('start'),
 			'notes': next_session.get('notes')

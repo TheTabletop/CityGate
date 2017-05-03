@@ -20,7 +20,7 @@ class Coop(object):
 			'pigeons': [],
 			'unseen_count': 0
 		})
-		return coopObject.inserted_id
+		return str(coopObject.inserted_id)
 
 	def on_get(self, req, resp, ucid):
 		#TODO take out objectids before return
