@@ -12,7 +12,6 @@ import msgpack
 class AllHeros(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.heros = self.db.heros
 
 	def on_get (self, req, resp):
@@ -24,7 +23,6 @@ class AllHeros(object):
 class AllGuilds(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.guilds = self.db.guilds
 
 	def on_get (self, req, resp):

@@ -8,10 +8,10 @@ from bson import ObjectId
 
 import falcon
 import json
-import msgpack
 import hashlib
 
 import resources.pigeoncoop as pcoop
+import resources.util as util
 
 #ALLOWED_IMAGE_TYPES = (
 #    'image/gif',
@@ -28,19 +28,57 @@ class NewHero(object):
 
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.heros = self.db.heros
+		self.emails = self.db.emails
+		self.coop = pcoop.Coop(db_reference)
 
 	def on_post(self, req, resp):
-		params = json.loads(req.stream.read().decode("utf-8") )
+		params = req.json
+
+		email = params.get('email')
+		playername = params.get('playername')
+		heroname = params.get('heroname')
+		backstory = params.get('backstory')
+		key = params.get('key')
+		games = params.get('games')
+		location = params.get('location')
+		address = params.get('location')
+
+		if email is None:
+			resp.data = str.encode(json.dumps({'error': 'The email param is required'}))
+			resp.status = falcon.HTTP_400
+			return
+		if playername is None:
+			resp.data = str.encode(json.dumps({'error': 'The playername param is required'}))
+			resp.status = falcon.HTTP_400
+			return
+		if heroname is None:
+			resp.data = str.encode(json.dumps({'error': 'The heroname param is required'}))
+			resp.status = falcon.HTTP_400
+			return
+		if key is None:
+			resp.data = str.encode(json.dumps({'error': 'The key param is required'}))
+			resp.status = falcon.HTTP_400
+			return
+		if games is None:
+			games = []
+		if backstory is None:
+			backstory = ""
+
+		try:
+			self.emails.insert_one({'_id': email, 'hero': None})
+		except Exception as e:
+			resp.data = str.encode(json.dumps({'error': 'Hero with %s alread exists'.format(email)}))
+			resp.status = falcon.HTTP_409
+			return
 		heroObject = self.heros.insert_one(
 			{
-				"email": params.get('email'),
-				"playername": params.get('playername'),
-				"heroname" : params.get('heroname'),
-				"games": params.get('games'),
-				"backstory": params.get('backstory'),
-				"key": hashlib.sha224(params.get('key').encode('utf-8')).hexdigest(),
+				"email": email,
+				"playername": playername,
+				"heroname": heroname,
+				"games": games,
+				"backstory": backstory,
+				"key": util.RfgKeyEncrypt(key),
 				"companions": [],
 				"guild_invites": [],
 				"requested_guilds": [],
@@ -50,142 +88,238 @@ class NewHero(object):
 				"location": "",
 				"address": "",
 			})
-		self.heros.update_one({'_id': heroObject}, {'$set': {'ucid': pcoop.Coop.Create(heroObject.inserted_id).inserted_id}})
-		resp.data = msgpack.packb({"uhid": "{}".format(heroObject.inserted_id)})
+		self.emails.update_one({'_id': ObjectId(email)}, {'$set': {'hero': heroObject.inserted_id}})
+		self.heros.update_one({'_id': ObjectId(heroObject.inserted_id)}, {'$set': {'ucid': self.coop.create(heroObject.inserted_id)}})
+		resp.data = str.encode(json.dumps({"success": "Created a hero.", "uhid":"{}".format(heroObject.inserted_id)}))
 		resp.status = falcon.HTTP_201
-
-	#Do we want to do anything with this?
-	def on_get(self, req, resp):
-		resp.status = falcon.HTTP_404
 
 class Hero(object):
 
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.heros = self.db.heros
 
 	# For updating a hero's Info
 	# Can only edit hero info for hero id of session token
 	def on_post(self, req, resp, uhid):
-		pass #TODO
+		params = req.json
+
+		email = params.get('email')
+		playername = params.get('playername')
+		heroname = params.get('heroname')
+		backstory = params.get('backstory')
+		games = params.get('games')
+		location = params.get('location')
+		address = params.get('location')
+		myDict = {}
+
+		if email is not None:
+			if myDict.get('$set') is None:
+				myDict['$set'] = {}
+			myDict['$set']['email'] = email
+		if playername is not None:
+			if myDict.get('$set') is None:
+				myDict['$set'] = {}
+			myDict['$set']['playername'] = playername
+		if heroname is not None:
+			if myDict.get('$set') is None:
+				myDict['$set'] = {}
+			myDict['$set']['heroname'] = heroname
+		if backstory is not None:
+			if myDict.get('$set') is None:
+				myDict['$set'] = {}
+			myDict['$set']['backstory'] = backstory
+		if location is not None:
+			if myDict.get('$set') is None:
+				myDict['$set'] = {}
+			myDict['$set']['location'] = location
+		if address is not None:
+			if myDict.get('$set') is None:
+				myDict['$set'] = {}
+			myDict['$set']['address'] = address
+		if games is not None:
+			if myDict.get('$push') is None:
+				myDict['$push'] = {}
+			myDict['$push']['games'] = {'$each': games}
+
+		result = self.heros.find_one_and_update({'_id': ObjectId(uhid)}, myDict, return_document=ReturnDocument.AFTER)
+
+		data = {
+			'uhid': "%s".format(result.get('_id')),
+			'email': result.get('email'),
+			'playername': result.get('playername'),
+			'heroname': result.get('heroname'),
+			'games': result.get('games'),
+			'backstory': result.get('backstory'),
+			"companions": result.get('companions'),
+			"guild_invites": result.get('guild_invites'),
+			"requested_guilds": result.get('requested_guilds'),
+			"requested_companions": result.get('requested_companions'),
+			"companion_requests": result.get('companion_requests'),
+			"ucid": result.get('ucid'),
+			"location": result.get('location'),
+			"address": result.get('address')
+		}
+		resp.data = str.encode(json.dumps(data))
+		resp.status = falcon.HTTP_202
 
 	# Get a hero by unique hero id (uhid)
 	# Must have an active user session token
 	def on_get(self, req, resp, uhid):
 		result = self.heros.find_one({"_id": ObjectId(uhid)})
 
-		if result.count() == 0:
-			resp.data = msgpack.packb({"Error": "We could not find that hero, they must have nat 20'd  their stealth check"})
-			resp.status = falcon.HTTP_404
-		elif result.count() == 1:
-			hero = result
-			for k, v in hero.items():
-				if type(hero[k]) is ObjectId:
-					temp = "{}".format(v)
-					hero[k] = temp
-			resp.data = msgpack.packb(json.dumps(hero))
-			resp.status = falcon.HTTP_200
-		else:
-			resp.data = msgpack.packb({"Error": "Somehow there is hero identity theft, damn rogues..."})
-			resp.status = falcon.HTTP_724
+		if result is None:
+			resp.data = str.encode(json.dumps({'error': 'Could not find hero with uhid'}))
+			resp.status = falcon.HTTP_405
+			returns
+
+		data = {
+			'uhid': "%s".format(result.get('_id')),
+			'email': result.get('email'),
+			'playername': result.get('playername'),
+			'heroname': result.get('heroname'),
+			'games': result.get('games'),
+			'backstory': result.get('backstory'),
+			"companions": result.get('companions'),
+			"guild_invites": result.get('guild_invites'),
+			"requested_guilds": result.get('requested_guilds'),
+			"requested_companions": result.get('requested_companions'),
+			"companion_requests": result.get('companion_requests'),
+			"ucid": result.get('ucid'),
+			"location": result.get('location'),
+			"address": result.get('address')
+		}
+
+		resp.data = str.encode(json.dumps(data))
+		resp.status = falcon.HTTP_200
 
 class PlayerName(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.heros = self.db.heros
 
 	def on_post(self, req, resp, uhid):
-		result = self.heros.update_one({'_id': ObjectId(uhid)}, {'$inc': {'playername': req.params_get('playername')}})
+		params = req.json
 
-		if result.modified_count == 1:
-			resp.data = msgpack.packb({"Success": "Successfully changed hero's player name"})
+		pname = params.get('playername')
+		if pname is None:
+			resp.data = str.encode(json.dumps({'error': 'no playername key in json provided'}))
+			resp.status = falcon.HTTP_400
+			return
+
+		result = self.heros.find_one_and_update({'_id': ObjectId(uhid)}, {'$set': {'playername': pname}}, return_document=ReturnDocument.AFTER)
+
+		if result is not None:
+			resp.data = str.encode(json.dumps({"uhid": "%s".format(result.get('_id')), 'playername': result.get('playername')}))
 			resp.status = falcon.HTTP_202
 		else:
-			resp.data = msgpack.packb({"Failed": "Unable to update hero's player name"})
+			resp.data = str.encode(json.dumps({"error": "Was unable to update hero's player name"}))
 			resp.status = falcon.HTTP_500
 
 	def on_get(self, req, resp, uhid):
 		result = self.heros.find_one({"_id": ObjectId(uhid)}, projection=['playername'])
 
 		if result is None:
-			resp.data = msgpack.packb({"Failure": "Hero not found"})
+			resp.data = srt.encode(json.dumps({"error": "Hero not found"}))
 			resp.status = falcon.HTTP_404
 		else:
-			pName = result.get('playername')
-			resp.data = msgpack.packb({"playername": pName})
+			pname = result.get('playername')
+			resp.data = str.encode(json.dumps({"uhid": "%s".format(result.get('_id')), "playername": pname}))
 			resp.status = falcon.HTTP_200
 
 class HeroName(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.heros = self.db.heros
 
 	def on_post(self, req, resp, uhid):
-		result = self.heros.update_one({'_id': ObjectId(uhid)}, {'$inc': {'heroname': req.params_get('heroname')}})
+		params = req.json
 
-		if result.modified_count == 1:
-			resp.data = msgpack.packb({"Success": "Successfully changed hero's name"})
+		hname = params.get('heroname')
+		if hname is None:
+			resp.data = str.encode(json.dumps({'error': 'no heroname key in json provided'}))
+			resp.status = falcon.HTTP_400
+			return
+
+		result = self.heros.find_one_and_update({'_id': ObjectId(uhid)}, {'$set': {'heroname': hname}}, return_document=ReturnDocument.AFTER)
+
+		if result is not None:
+			resp.data = str.encode(json.dumps({'uhid': "%s".format(result.get('_id')), 'heroname': result.get('heroname')}))
 			resp.status = falcon.HTTP_202
 		else:
-			resp.data = msgpack.packb({"Failed": "Unable to update hero's name"})
+			resp.data = str.encode(json.dumps({"error": "Was unable to update hero's name"}))
 			resp.status = falcon.HTTP_500
 
 	def on_get(self, req, resp, uhid):
 		result = self.heros.find_one({"_id": ObjectId(uhid)}, projection=['heroname'])
 
 		if result is None:
-			resp.data = msgpack.packb({"Failure": "Hero not found"})
+			resp.data = str.encode(json.dumps({"error": "Hero not found"}))
 			resp.status = falcon.HTTP_404
 		else:
-			hName = result.get('heroname')
-			resp.data = msgpack.packb({"heroname": hName})
+			hname = result.get('heroname')
+			resp.data = str.encode(json.dumps({'uhid': "%s".format(result.get('_id')), "heroname": hname}))
 			resp.status = falcon.HTTP_200
 
 class Email(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.heros = self.db.heros
+		self.emails = self.db.emails
 
 	def on_post(self, req, resp, uhid):
-		result = self.heros.update_one({'_id': ObjectId(uhid)}, {'$inc': {'email': req.params_get('email')}})
+		params = req.json
 
-		if result.modified_count == 1:
-			resp.data = msgpack.packb({"Success": "Successfully changed hero's email"})
+		#check to make sure they provided a new email
+		newemail = params.get('email')
+		if newemail is None:
+			resp.data = str.encode(json.dumps({'error': 'no email key in json provided'}))
+			resp.status = falcon.HTTP_400
+			return
+
+		#make sure the hero of the uhid exists
+		heroObject = self.heros.find_one({'_id': ObjectId(uhid)}, projection = ['email'])
+		if heroObject is None:
+			resp.data = str.encode(json.dumps({'error': 'Invalid hero id, was not found'}))
+			resp.status = falcon.HTTP_410
+		oldemail = heroObject.get('email')
+
+		#try and insert the new email into the email Collection
+		#if it already exists, it will throw an exception
+		try:
+			self.emails.insert_one({'_id': newemail, 'uhid': uhid})
+		except:
+			resp.data = str.encode(json.dumps({'error': 'Emails already belongs to another hero.'}))
+			resp.status = falcon.HTTP_409
+
+		#update the hero with the new email
+		updatedHeroObject = self.heros.find_one_and_update({'_id': ObjectId(uhid)}, {'$set': {'email': email}}, return_document=ReturnDocument.AFTER)
+
+		if result is not None:
+			#remove the old email from the email Collection
+			self.emails.delete_one({'_id': oldemail})
+
+			resp.data = str.encode(json.dumps({'uhid': "%s".format(updatedHeroObject.get('_id')), 'email': updatedHeroObject.get('email')}))
 			resp.status = falcon.HTTP_202
 		else:
-			resp.data = msgpack.packb({"Failed": "Unable to update hero's email"})
+			resp.data = str.encode(json.dumps({"error": "Was unable to update hero's email"}))
 			resp.status = falcon.HTTP_500
 
 	def on_get(self, req, resp, uhid):
 		result = self.heros.find_one({"_id": ObjectId(uhid)}, projection=['email'])
 
 		if result is None:
-			resp.data = msgpack.packb({"Failure": "Hero not found"})
+			resp.data = str.encode(json.dumps({"error": "Hero not found"}))
 			resp.status = falcon.HTTP_404
 		else:
-			email = result.get('heroname')
-			resp.data = msgpack.packb({"email": email})
+			email = result.get('email')
+			resp.data = str.encode(json.dumps({'uhid': result.get('_id'), "email": email}))
 			resp.status = falcon.HTTP_200
 
 class Companions(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.heros = self.db.heros
-
-	def on_post(self, req, resp, uhid):
-		result = self.heros.update_one({'_id': ObjectId(uhid)}, {'$push': {'companions': ObjectId(req.params_get('companion'))}})
-
-		if result.modified_count == 1:
-			resp.data = msgpack.packb({"Success": "Successfully added companion"})
-			resp.status = falcon.HTTP_202
-		else:
-			resp.data = msgpack.packb({"Failed": "Unable to add companion"})
-			resp.status = falcon.HTTP_500
 
 	def on_get(self, req, resp, uhid):
 		result = self.heros.find_one({"_id": ObjectId(uhid)}, projection=['companions'])
@@ -195,71 +329,99 @@ class Companions(object):
 			resp.status = falcon.HTTP_404
 		else:
 			companions = result.get('companions')
-			for k, v in companions.items():
-				companions[k] = "{}".format(v)
-			resp.data = msgpack.packb({"companions": companions})
+			data = []
+			for companion in companions:
+				temp = self.hero.find_one({"_id": ObjectId(companion)}, projection=['playername', 'heroname'])
+				if temp is not None:
+					data.append({'uhid': companion, 'playername': temp.get('playername'), 'heroname': temp.get('heroname')})
+
+			resp.data = str.encode(json.dumps(data))
 			resp.status = falcon.HTTP_200
+
+	def on_delete(self, req, resp, uhid):
+		resp.data = str.encode(json.dumps({'error': 'route not yet implemented'}))
+		resp.status = falcon.HTTP_500
 
 class Key(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.heros = self.db.heros
 
 	def on_post(self, req, resp, uhid):
+		params = req.json
+
+		oldkey = params.get('oldkey')
+		newkey = params.get('newkey')
+		if oldkey is None or newkey is None:
+			resp.data = str.encode(json.dumps({'error': 'both newkey and old key are required as data from req'}))
+			resp.status = falcon.HTTP_400
+			return
 		result = self.heros.find_one({"_id": ObjectId(uhid)}, projection=['key'])
-		if result.get("key") == hashlib.sha224(req.get_param('oldkey')).hexdigest():
-			result = self.heros.update_one({'_id': ObjectId(uhid)}, {'$inc': {'key': hashlib.sha224(req.get_param('newkey').hexdigest())}})
+		if result.get("key") == util.RfgKeyEncrypt(oldkey):
+			result = self.heros.update_one({'_id': ObjectId(uhid)}, {'$set': {'key': util.RfgKeyEncrypt(newkey)}})
 			if result.modified_count == 1:
-				resp.data = msgpack.packb({"Success": "Successfully added companion"})
+				resp.data = str.encode(json.dumps({"success": "Successfully updated hero's key"}))
 				resp.status = falcon.HTTP_202
 			else:
-				resp.data = msgpack.packb({"Failed": "Unable to update key"})
+				resp.data = str.encode(json.dumps({"error": "Unable to update key"}))
 				resp.status = falcon.HTTP_500
 		else:
-			resp.data = msgpack.packb({"Failed": "Incorrect account key for authorization"})
+			resp.data = str.encode(json.dumps({"error": "Incorrect account key for authorization"}))
 			resp.status = falcon.HTTP_400
 
-
 	def on_get(self, req, resp, uhid):
-		resp.data = msgpack.pack({"Message": "Yea right, like we'd allow that."})
+		resp.data = str.encode(json.dumps({"error": "Yea right, like we'd allow that."}))
 		resp.status = falcon.HTTP_740
 
 class ForgeKey(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.heros = self.db.heros
 		self.forgeCommissions = self.db.forgeCommissions
 
 	def on_post(self, req, resp, uiid):
+		params = req.json
+
+		newkey = params.get('newkey')
+		if newkey is None:
+			resp.data = str.encode(json.dumps({'error': 'both newkey is required as data from req'}))
+			resp.status = falcon.HTTP_400
+			return
+
 		forgeToken = self.forgeCommissions.find_one({"_id": ObjectId(uiid)})
 		if forgeToken is None:
-			pass
+			resp.data = str.encode(json.dumps({'error': 'forge token does not exist'}))
+			resp.status = falcon.HTTP_400
+			return
 		else:
 			uhid = forgeToken.get('uhid')
-			result = self.heros.update_one({'_id': ObjectId(uhid)}, {'$inc': {'key': hashlib.sha224(req.get_param('newkey').hexdigest())}})
+			result = self.heros.update_one({'_id': ObjectId(uhid)}, {'$set': {'key': hashlib.sha224(newkey.hexdigest())}})
 			if result.modified_count == 1:
-				resp.data = msgpack.packb({"Success": "Successfully updated key"})
+				resp.data = str.encode(json.dumps({"success": "Successfully forged a new key"}))
 				resp.status = falcon.HTTP_202
 				self.forgeCommissions.delete_one({"_id": ObjectId(uiid)})
 			else:
-				resp.data = msgpack.packb({"Failed": "Unable to update key"})
+				resp.data = str.encode(json.dumps({"error": "Unable to update key"}))
 				resp.status = falcon.HTTP_500
 
 	def on_get(self, req, resp, uiid):
-		resp.data = msgpack.pack({"Message": "Yea right, like we'd allow that."})
+		resp.data = str.encode(json.dumps({"error": "Yea right, like we'd allow that."}))
 		resp.status = falcon.HTTP_740
 
 class CommissionKey(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.heros = self.db.heros
 		self.forgeCommissions = self.db.forgeCommissions
 
 	def on_post(self, req, resp):
-		email = req.params_get('email')
+		params = req.json
+
+		email = params.get('email')
+		if email is None:
+			resp.data = str.encode(json.dumps({'error': 'email is required as data from req'}))
+			resp.status = falcon.HTTP_400
+			return
 		user = self.heros.find_one({'email': email}, projection=['_id'])
 
 		#TODO
@@ -270,37 +432,46 @@ class CommissionKey(object):
 		# where uiid is the id for the commission, that way the front end
 		# know's what commission request to use
 		if user is None:
-			pass #TODO E-mail that email isn't registered with us
+			#we fake whether or not the email exists because we don't want to give away information
+			resp.data = str.encode(json.dumps({'success': 'an email has been sent'}))
+			resp.status = falcon.HTTP_202
+			return
 		else:
 			self.forgeCommissions.remove({'user': user})
 			result = self.forgeCommissions.insert_one({'user': user})
 			uiid = "{}".format(result['inserted_id'])
+			resp.data = str.encode(json.dumps({'success': 'an email has been sent'}))
+			resp.status = falcon.HTTP_202
 			#TODO email link
 
 	def on_get(self, req, resp):
-		resp.data = msgpack.packb({"Message": "This is not a route that is allowed"})
+		resp.data = str.encode(json.dumps({"error": "This is not a route that is allowed"}))
 		resp.status = falcon.HTTP_405
 
 class Requests(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.heros = self.db.heros
 
 	def on_get(self, req, resp, uhid):
 		result = self.heros.find_one({'_id': ObjectId(uhid)}, projection=["requested_guilds"])
-		resp.data = msgpack.packb(json.dumps({"requested_guilds": resp.get('requested_guilds')}))
+		if result is None:
+			resp.data = str.encode(json.dumps({'error': 'Unable to locate hero'}))
+			resp.status = falcon.HTTP_404
+		resp.data = str.encode(json.dumps({"uhid": result.get('_id'), "requested_guilds": resp.get('requested_guilds')}))
 		resp.status = falcon.HTTP_200
 
 class Invites(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.heros = self.db.heros
 
 	def on_get(self, req, resp, uhid):
 		result = self.heros.find_one({'_id': ObjectId(uhid)}, projection=["guild_invites"])
-		resp.data = msgpack.packb(json.dumps({"guild_invites": resp.get('guild_invites')}))
+		if result is None:
+			resp.data = str.encode(json.dumps({'error': 'Unable to locate hero'}))
+			resp.status = falcon.HTTP_404
+		resp.data = str.encode(json.dumps({"uhid": result.get('_id'), "guild_invites": resp.get('guild_invites')}))
 		resp.status = falcon.HTTP_200
 
 class CompanionRequest(object):
@@ -309,7 +480,14 @@ class CompanionRequest(object):
 		self.heros = self.db.heros
 
 	def on_post(self, req, resp, uhid):
-		requestee = req.get_json('requestee', dtype=str)
+		params = req.json
+
+		requestee = params.get('requestee')
+		if email is None:
+			resp.data = str.encode(json.dumps({'error': 'requestee is required as data from req'}))
+			resp.status = falcon.HTTP_400
+			return
+
 		result = self.heros.update_one({'_id': ObjectId(requestee)}, {'$push': {'companion_requests': uhid}})
 
 		if result.matcheds_count == 0:
@@ -320,19 +498,25 @@ class CompanionRequest(object):
 			resp.status = falcon.HTTP_500
 		else:
 			result = self.heros.find_one_and_update({'_id': ObjectId(uhid)}, {'$push': {'requested_companions': requestee}}, return_document=ReturnDocument.AFTER)
-			resp.json = {"requested_companions": result.get('requested_companions')}
+			resp.data = str.encode(json.dumps({"uhid": result.get('_id'), "requested_companions": result.get('requested_companions')}))
 			resp.status = falcon.HTTP_202
 
 	def on_delete(self, req, resp, uhid):
-		requestee = req.get_json('requestee', dtype=str)
+		params = req.json
+
+		requestee = params.get('requestee')
+		if email is None:
+			resp.data = str.encode(json.dumps({'error': 'requestee is required as data from req'}))
+			resp.status = falcon.HTTP_400
+			return
 		r1 = self.heros.update_one({'_id': requestee}, {'$pull': {'companion_requests': uhid}})
 		r2 = self.heros.find_one_and_update({'_id': uhid}, {'$pull': {'requested_companions': requestee}}, return_document=ReturnDocument.AFTER)
 
 		if r1.matched_count == 0:
-			resp.json = {'error': 'Could not locate specified hero', 'requested_companions': r2.get('requested_companions')}
+			resp.data = str.encode(json.dumps({'error': 'Could not locate specified hero', 'requested_companions': r2.get('requested_companions')}))
 			resp.status = falcon.HTTP_410
 		else:
-			resp.json = {'requested_companions': r2.get('requested_companions')}
+			resp.data = str.encode(json.dumps({'uhid': r2.get('_id'), 'requested_companions': r2.get('requested_companions')}))
 			resp.stats = falcon.HTTP_202
 
 class CompanionRequestResponse(object):
@@ -341,8 +525,14 @@ class CompanionRequestResponse(object):
 		self.heros = self.db.heros
 
 	def on_post(self, req, resp, uhid):
-		accept = req.get_json('decision', dtype=bool)
-		requester = req.get_json('requester', dtype=str)
+		params = req.json
+
+		requester = params.get('requestee')
+		accept = params.get('accept')
+		if requester is None or accept is None:
+			resp.data = str.encode(json.dumps({'error': 'requester and accept are both required as data from req'}))
+			resp.status = falcon.HTTP_400
+			return
 		r1 = None
 		r2 = None
 		if accept:
@@ -355,13 +545,13 @@ class CompanionRequestResponse(object):
 		final_r = self.heros.find_one({'_id': ObjectId(uhid)}, project=["companions", "companion_requests"])
 
 		if r1.matched_count + r2.matched_count == 2 and r1.modified_count + r2.modified_count >= 1:
-			resp.json = {"result": "Success!", "companions": final_r.get("companions"), "companion_requests": final_r.get("companion_requests")}
+			resp.data = str.encode(json.dumps({'uhid': final_r.get('uhid'), "companions": final_r.get("companions"), "companion_requests": final_r.get("companion_requests")}))
 			resp.status = falon.HTTP_200
 		elif r1.matched_count + r2.matched_count < 2:
-			resp.json = {"error": "Could not find requester"}
+			resp.data = str.encode(json.dumps({"error": "Could not find requester"}))
 			resp.status = falcon.HTTP_410
 		else:
-			resp.json = {"error": "Invalid companion request"}
+			resp.data = str.encode(json.dumps({"error": "Invalid companion request"}))
 			resp.status = falcon.HTTP_740
 
 
@@ -372,5 +562,5 @@ class CompanionRequests(object):
 
 	def on_get(self, req, resp, uhid):
 		result = self.heros.find_one({'_id': ObjectId(uhid)}, projection=["companion_requests", "requested_companions"])
-		resp.json = {'companion_requests': result.get('companion_requests'), 'requested_companions': result.get('requested_companions')}
+		resp.data = str.encode(json.dumps({'companion_requests': result.get('companion_requests'), 'requested_companions': result.get('requested_companions')}))
 		resp.status = falcon.HTTP_200

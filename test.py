@@ -4,14 +4,17 @@ import requests
 from pymongo import MongoClient
 import json
 
+#TODO Change USR and PASSWORD to actual values
+lib = "mongodb://<USR>:<PASSWORD>@cluster0-shard-00-00-ygomb.mongodb.net:27017,cluster0-shard-00-01-ygomb.mongodb.net:27017,cluster0-shard-00-02-ygomb.mongodb.net:27017/TestLibrary?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin"
+
 class CheckCabbage(unittest.TestCase):
 	def setUp(self):
 		"""Call before every test case."""
-		self.db = MongoClient().greatLibrary
+		self.db = MongoClient(lib).greatLibrary
 
 	def tearDown(self):
 		"""Call after every test case."""
-		pass
+		self.db.close()
 
 	def testCheckCabbage(self):
 		r = requests.get('http://localhost:8000/checkCabbage')
@@ -23,11 +26,11 @@ class CheckCabbage(unittest.TestCase):
 class CreateHero(unittest.TestCase):
 	def setUp(self):
 		"""Call before every test case."""
-		self.db = MongoClient().greatLibrary
+		self.db = MongoClient(lib).greatLibrary
 
 	def tearDown(self):
 		"""Call after every test case."""
-		pass
+		self.db.close()
 
 	def testHeroCreate(self):
 		"""Test that we can create a hero"""
@@ -45,7 +48,7 @@ class CreateHero(unittest.TestCase):
 class ChangeHeroName(unittest.TestCase):
 	def setUp(self):
 		"""Call before every test case."""
-		self.db = MongoClient().greatLibrary
+		self.db = MongoClient(lib).greatLibrary
 		payload = {
 			"email": 'foobar@rollforguild.com',
 			"playername": 'Foo Bar',
@@ -57,7 +60,7 @@ class ChangeHeroName(unittest.TestCase):
 
 	def tearDown(self):
 		"""Call after every test case."""
-		pass
+		self.db.close()
 
 	def testChangeHeroName(self):
 		"""Test that we can create a hero"""
@@ -71,7 +74,7 @@ class ChangeHeroName(unittest.TestCase):
 class ChangePlayerName(unittest.TestCase):
 	def setUp(self):
 		"""Call before every test case."""
-		self.db = MongoClient().greatLibrary
+		self.db = MongoClient(lib).greatLibrary
 		payload = {
 			"email": 'foobar@rollforguild.com',
 			"playername": 'Foo Bar',
@@ -83,7 +86,7 @@ class ChangePlayerName(unittest.TestCase):
 
 	def tearDown(self):
 		"""Call after every test case."""
-		pass
+		self.db.close()
 
 	def testChangePlayerName(self):
 		"""Test that we can create a hero"""
@@ -98,7 +101,7 @@ class ChangePlayerName(unittest.TestCase):
 class ChangeEmail(unittest.TestCase):
 	def setUp(self):
 		"""Call before every test case."""
-		self.db = MongoClient().greatLibrary
+		self.db = MongoClient(lib).greatLibrary
 		payload = {
 			"email": 'foobar@rollforguild.com',
 			"playername": 'Foo Bar',
@@ -110,7 +113,7 @@ class ChangeEmail(unittest.TestCase):
 
 	def tearDown(self):
 		"""Call after every test case."""
-		pass
+		self.db.close()
 
 	def testChangeEmail(self):
 		"""Test that we can create a hero"""
@@ -124,7 +127,7 @@ class ChangeEmail(unittest.TestCase):
 class ChangeKey(unittest.TestCase):
 	def setUp(self):
 		"""Call before every test case."""
-		self.db = MongoClient().greatLibrary
+		self.db = MongoClient(lib).greatLibrary
 		payload = {
 			"email": 'foobar@rollforguild.com',
 			"playername": 'Foo Bar',
@@ -136,7 +139,7 @@ class ChangeKey(unittest.TestCase):
 
 	def tearDown(self):
 		"""Call after every test case."""
-		pass
+		self.db.close()
 
 	def testChangeKey(self):
 		"""Test that we can create a hero"""
@@ -155,7 +158,7 @@ class LoginHero(unittest.TestCase):
 
 	def tearDown(self):
 		"""Call after every test case."""
-		pass
+		self.db.close()
 
 	def testHeroLogin(self):
 		"""Test that we can login a hero"""
@@ -168,7 +171,7 @@ class LoginHero(unittest.TestCase):
 class CreateGuild(unittest.TestCase):
 	def setUp(self):
 		"""Call before every test case."""
-		self.db = MongoClient().greatLibrary
+		self.db = MongoClient(lib).greatLibrary
 		payload = {
 			"email": 'foobar@rollforguild.com',
 			"playername": 'Foo Bar',
@@ -180,7 +183,7 @@ class CreateGuild(unittest.TestCase):
 
 	def tearDown(self):
 		"""Call after every test case."""
-		pass
+		self.db.close()
 
 	def testGuildCreate(self):
 		"""Test that we can create a hero"""
@@ -202,7 +205,7 @@ class CreateGuild(unittest.TestCase):
 class ChangeGuildName(unittest.TestCase):
 	def setUp(self):
 		"""Call before every test case."""
-		self.db = MongoClient().greatLibrary
+		self.db = MongoClient(lib).greatLibrary
 		payload = {
 			"guildname": 'Foos Guild',
 			"charter": 'The Charter',
@@ -218,7 +221,7 @@ class ChangeGuildName(unittest.TestCase):
 
 	def tearDown(self):
 		"""Call after every test case."""
-		pass
+		self.db.close()
 
 	def testChangeGuildName(self):
 		"""Test that we can create a hero"""
@@ -232,7 +235,7 @@ class ChangeGuildName(unittest.TestCase):
 class ChangeGuildGames(unittest.TestCase):
 	def setUp(self):
 		"""Call before every test case."""
-		self.db = MongoClient().greatLibrary
+		self.db = MongoClient(lib).greatLibrary
 		payload = {
 			"guildname": 'Foos Guild',
 			"charter": 'The Charter',
@@ -248,7 +251,7 @@ class ChangeGuildGames(unittest.TestCase):
 
 	def tearDown(self):
 		"""Call after every test case."""
-		pass
+		self.db.close()
 
 	def testChangeGuildGames(self):
 		"""Test that we can create a hero"""
@@ -262,7 +265,7 @@ class ChangeGuildGames(unittest.TestCase):
 class ChangeGuildCharter(unittest.TestCase):
 	def setUp(self):
 		"""Call before every test case."""
-		self.db = MongoClient().greatLibrary
+		self.db = MongoClient(lib).greatLibrary
 		payload = {
 			"guildname": 'Foos Guild',
 			"charter": 'The Charter',
@@ -278,7 +281,7 @@ class ChangeGuildCharter(unittest.TestCase):
 
 	def tearDown(self):
 		"""Call after every test case."""
-		pass
+		self.db.close()
 
 	def testChangeGuildCharter(self):
 		"""Test that we can create a hero"""
@@ -292,7 +295,7 @@ class ChangeGuildCharter(unittest.TestCase):
 class ChangeGuildLocation(unittest.TestCase):
 	def setUp(self):
 		"""Call before every test case."""
-		self.db = MongoClient().greatLibrary
+		self.db = MongoClient(lib).greatLibrary
 		payload = {
 			"guildname": 'Foos Guild',
 			"charter": 'The Charter',
@@ -308,7 +311,7 @@ class ChangeGuildLocation(unittest.TestCase):
 
 	def tearDown(self):
 		"""Call after every test case."""
-		pass
+		self.db.close()
 
 	def testChangeGuildLocation(self):
 		"""Test that we can create a hero"""
@@ -322,7 +325,7 @@ class ChangeGuildLocation(unittest.TestCase):
 class ChangeGuildMembers(unittest.TestCase):
 	def setUp(self):
 		"""Call before every test case."""
-		self.db = MongoClient().greatLibrary
+		self.db = MongoClient(lib).greatLibrary
 		payload = {
 			"guildname": 'Foos Guild',
 			"charter": 'The Charter',
@@ -338,7 +341,7 @@ class ChangeGuildMembers(unittest.TestCase):
 
 	def tearDown(self):
 		"""Call after every test case."""
-		pass
+		self.db.close()
 
 	def testChangeGuildMembers(self):
 		"""Test that we can create a hero"""
@@ -356,7 +359,7 @@ class ChangeGuildMembers(unittest.TestCase):
 class checkPidgeons(unittest.TestCase):
 	def setUp(self):
 		"""Call before every test case."""
-		self.db = MongoClient().greatLibrary
+		self.db = MongoClient(lib).greatLibrary
 		payload = {
 			"email": 'foobar@rollforguild.com',
 			"playername": 'Foo Bar',
@@ -378,7 +381,8 @@ class checkPidgeons(unittest.TestCase):
 
 	def tearDown(self):
 		"""Call after every test case."""
-		pass
+		self.db.close()
+
 	#www.todo.com/coop/{ucid}/pigeon/newpigeon
 	def testPigeonCreateDuo(self):
 		assertEqual(True,True)

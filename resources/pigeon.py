@@ -15,11 +15,10 @@ import resources.pigeoncoop as coop
 class NewPigeon(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.pigeons = self.db.pigeons
 
 	def on_post(self, req, resp, ucid):
-		params = json.loads(req.stream.read().decode("utf-8"))
+		params = req.json()
 		participants = params.get("send_to")
 		toUpdate = participants
 		participants.append(ucid)
@@ -40,15 +39,14 @@ class NewPigeon(object):
 				resp.data = msgpack.packb(json.dumps({"upid":createResult.inserted_id}))
 				resp.status = falcon.HTTP_201
 			else:
-				resp.data = msgpack.packb(json.dumps({"Error": "Unable to create message"}))
+				resp.data = str.encode(json.dumps({"Error": "Unable to create message"}))
 				resp.status = falcon.HTTP_500
 		else:
-			Messages.add_message()
+			Messages.add_message(req, resp, ucid)
 
 class Pigeon(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.pigeons = self.db.pigeons
 		self.coops = self.db.pigeoncoops
 
@@ -61,17 +59,18 @@ class Pigeon(object):
 			resp.data = msgpack.packb(json.dumps(result))
 			resp.status = falcon.HTTP_200
 
+
 	def on_delete(self, req, resp, ucid, upid):
 		resultForRemoveP = self.pigeons.update_one({"_id": ObjectId(upid)}, {"$pull": {"has_not_read": ObjectId(ucid), "participants": ObjectId(ucid)}})
 		resultForRemoveInC = coop.Pigeons.remove_pigeon(ucid, upid)
 
-		resp.data = msgpack.packb(json.dumps({"Success": "Removed hero from the pigeon's list of participants"}))
+		resp.data = str.encode(json.dumps({"Success": "Removed hero from the pigeon's list of participants"}))
 		resp.status = falcon.HTTP_202
+
 
 class Messages(object):
 	def __init__(self, db_reference):
 		self.db = db_reference
-		self.db = MongoClient().greatLibrary
 		self.pigeons = self.db.pigeons
 
 	def on_get(self, req, resp, ucid, upid):
@@ -79,23 +78,36 @@ class Messages(object):
 
 		if result is None:
 			resp.status = falcon.HTTP_404
-			resp.data = msgpack.packb(json.dumps({"Error": "Unable to find associated pigeon."}))
+			resp.data = str.encode(json.dumps({"Error": "Unable to find associated pigeon."}))
 		else:
-			resp.data = msgpack.packb(json.dumps(result.get("messages")))
+			resp.data = str.encode(json.dumps(result.get("messages")))
 			resp.status = falcon.HTTP_200
 
 	def on_post(self, req, resp, ucid, upid):
+		add_message(self, req, resp, ucid, upid)
 
-		if "Error" in message:
-			resp.data = msgpack.packb(json.dumps(data))
-			resp.status = falcon.HTTP_500
 
 	def add_message(self, req, resp, ucid, upid):
 		result = self.pigeons.find_one({"_id": ObjectId(upid)})
 
 		if result is not None:
-			#toNotify = result.
-			pass
+
+			message = req.json.get('message')
+			sender = req.json.get('sender')
+
+
+			if message is None:
+				resp.data = str.encode(json.dumps({"Error": "Unable to find message content"}))
+				resp.status = falcon.HTTP_404
+			if sender is None:
+				resp.data = str.encode(json.dumps({"Error": "Unable to find sender"}))
+				resp.status = falcon.HTTP_404
+			else:
+				ts = datetime.datetime.utcnow()
+				self.pigeons.update_one({'_id': ObjectId(upid)}, {'$push': {"messages": message, "sender": sender, "ts": ts}})
+			# toNotify = result.
 		else:
-			resp.data = msgpack.packb(json.dumps({"Error": "Unable to find pigeon to add message"}))
-			resp.status = falon.HTTP_404
+			resp.data = str.encode(json.dumps({"Error": "Unable to find pigeon to add message"}))
+			resp.status = falcon.HTTP_404
+
+
