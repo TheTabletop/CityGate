@@ -342,7 +342,7 @@ class RequestToJoinGuild(object):
 
 	def on_post(self, req, resp, ugid, uhid):
 		self.heros.update_one({'_id': ObjectId(uhid)}, {'$push': {'requested_guilds': ugid}})
-		self.guilds.update_one({'_id': ObjectId(ugid)}, {'$push': {'hero_requests': uhid)}})
+		self.guilds.update_one({'_id': ObjectId(ugid)}, {'$push': {'hero_requests': uhid}})
 
 		resp.data = str.encode(json.dumps({'success': 'Invited hero.'}))
 		resp.status = falcon.HTTP_202
