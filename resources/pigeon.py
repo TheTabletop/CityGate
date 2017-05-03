@@ -54,9 +54,12 @@ class Pigeon(object):
 
 	def on_get(self, req, resp, ucid, upid):
 		result = self.pigeons.find_one({"_id": ObjectId(upid)})
-
-		resp.data = msgpack.packb(json.dumps(result))
-		resp.status = falcon.HTTP_200
+		if(result is None):
+			resp.data = msgpack.packb(json.dumps({"Error: unable to find pigeon"}))
+			resp.status = falcon.HTTP_500
+		else
+			resp.data = msgpack.packb(json.dumps(result))
+			resp.status = falcon.HTTP_200
 
 	def on_delete(self, req, resp, ucid, upid):
 		resultForRemoveP = self.pigeons.update_one({"_id": ObjectId(upid)}, {"$pull": {"has_not_read": ObjectId(ucid), "participants": ObjectId(ucid)}})
