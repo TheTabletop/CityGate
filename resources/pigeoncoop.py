@@ -7,7 +7,6 @@ from bson import ObjectId
 
 import falcon
 import json
-import msgpack
 import datetime
 
 class Coop(object):
@@ -21,12 +20,13 @@ class Coop(object):
 			'pigeons': [],
 			'unseen_count': 0
 		})
-		return coopObject.inserted_id
+		return str(coopObject.inserted_id)
 
 	def on_get(self, req, resp, ucid):
+		#TODO take out objectids before return
 		coop = self.coops.find_one({'_id': ObjectId(ucid)})
 
-		resp.data = msgpack.packb(json.dumps(coop))
+		resp.data = str.encode((json.dumps(coop)))
 		resp.status = falcon.HTTP_200
 
 	def increase_count(self, ucid):
@@ -43,7 +43,11 @@ class Pigeons(object):
 	def on_get(self, req, resp, upid):
 		coop = self.coops.find_one({'_id': ObjectId(ucid)}, projection=['pigeons'])
 
-		resp.data = msgpack.packb(json.dumps({'pigeons': coop.get('pigeons')}))
+		if coop is None:
+			resp.data = str.encode(json.dumps({'error': 'Unable to find specified coop'}))
+			resp.status = falcon.HTTP_410
+
+		resp.data = str.encode(json.dumps({'pigeons': coop.get('pigeons')}))
 		resp.status = falcon.HTTP_200
 
 	def add_pigeon(self, ucid, upid, seen):
@@ -57,7 +61,7 @@ class Pigeons(object):
 
 class Owner(object):
 	def on_get(self, req, resp, ucid):
-		resp.data = msgpack.packb(json.dumps({"uhid": ucid}))
+		resp.data = str.encode(json.dumps({"uhid": ucid}))
 		resp.status = falcon.HTTP_200
 
 class UnseenCount(object):
@@ -69,8 +73,9 @@ class UnseenCount(object):
 		result = self.coops.find_one({'_id': ObjectId(ucid)}, projection=['unseen_count'])
 
 		if result is None:
-			resp.data = msgpack.packb({"Failed": "Unable to get number of unread messages"})
-			resp.status = falcon.HTTP_500
-		else:
-			resp.data = msgpack.packb({"unread_messages": num.get('unseen_count')})
-			resp.status = falcon.HTTP_202
+			resp.data = str.encode(json.dumps({"error": "Unable to find specified coop"}))
+			resp.status = falcon.HTTP_410
+			return
+
+		resp.data = str.encode(json.dumps({"unread_messages": num.get('unseen_count')}))
+		resp.status = falcon.HTTP_202
