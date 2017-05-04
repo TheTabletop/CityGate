@@ -63,9 +63,10 @@ class AllGuilds(object):
 				else:
 					for i in range(heros.count()):
 						if str(heros[i].get('_id')) == uhid:
-							heroname =
-							herocache[uhid] = {'heroname': heros[i].get('heroname'), 'playername': heros[i].get('playername')}
-							temp['members'].append('uhid': uhid, 'heroname': )
+							heroname = heros[i].get('heroname')
+							playername = heros[i].get('playername')
+							herocache[uhid] = {'heroname': heroname, 'playername': playername}
+							temp['members'].append({'uhid': uhid, 'heroname': heroname, 'playername': playername})
 			distance += random.randint(0,1) + random.random()
 			temp['distance'] = distance
 			guilds.append(temp)
